@@ -32,8 +32,8 @@ export default function Register(): JSX.Element {
       createdOn: new Date(),
     },
     validationSchema: Yup.object({
-      name: Yup.string().max(50).required("Required"),
-      email: Yup.string().email().max(10).required("Required"),
+      name: Yup.string().max(32).required("Required"),
+      email: Yup.string().email().max(32).required("Required"),
       month: Yup.string().required("Required"),
       day: Yup.number().required("Required"),
       year: Yup.number().required("Required"),
@@ -51,7 +51,7 @@ export default function Register(): JSX.Element {
       password: "",
     },
     validationSchema: Yup.object({
-      surname: Yup.string().max(50).required("Required"),
+      surname: Yup.string().max(32).required("Required"),
       phoneNumber: Yup.string().max(9).required("Required"),
       username: Yup.string().max(16).required("Required"),
       password: Yup.string().max(16).required("Required"),
