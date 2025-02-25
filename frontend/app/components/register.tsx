@@ -60,7 +60,7 @@ export default function Register(): JSX.Element {
       if (initialInfo) {
         try {
           axios
-            .post("/register", { ...initialInfo, ...values })
+            .post("/accounts", { ...initialInfo, ...values })
             .then((response) => response.status)
             .catch((error) =>
               console.log("Error while creating an account", error)
