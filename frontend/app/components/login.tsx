@@ -6,7 +6,6 @@ import * as Yup from "yup";
 import axios from "axios";
 
 export default function Login(): JSX.Element {
-  const [userToken, setUserToken] = useState<string>("");
   const LoginForm = useFormik({
     initialValues: {
       inputValue: "",
@@ -17,7 +16,11 @@ export default function Login(): JSX.Element {
     onSubmit: (values) => {
       axios
         .post("/login", values)
-        .then((response) => setUserToken(response.data))
+        .then((response) => {
+          if (response.data) {
+            sessionStorage.setItem("username", JSON.stringify(response.data));
+          }
+        })
         .catch((error) => console.log("Error while logging in", error));
     },
   });

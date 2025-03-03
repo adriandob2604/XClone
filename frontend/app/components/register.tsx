@@ -1,20 +1,20 @@
 "use client";
-import { JSX, useReducer, useState } from "react";
+import { JSX, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { RegisterDateInfo } from "./utils";
 import axios from "axios";
+export interface AccountDetails {
+  name: string;
+  email: string;
+  month: string;
+  day: number;
+  year: number;
+  createdOn: Date;
+}
 export default function Register(): JSX.Element {
-  interface InitialRegisterInfo {
-    name: string;
-    email: string;
-    month: string;
-    day: number;
-    year: number;
-    createdOn: Date;
-  }
   const [isClicked, setIsClicked] = useState<boolean>(false);
-  const [initialInfo, setInitialInfo] = useState<InitialRegisterInfo>({
+  const [initialInfo, setInitialInfo] = useState<AccountDetails>({
     name: "",
     email: "",
     month: "",

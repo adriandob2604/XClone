@@ -11,8 +11,9 @@ export default function Root(): JSX.Element {
           alt="Logo"
           src="/logo.png"
           className="logo-container"
-          width={512}
-          height={512}
+          width={600}
+          height={600}
+          priority={true}
         />
       </div>
       <div className="create-account-container">
@@ -33,14 +34,18 @@ export default function Root(): JSX.Element {
               <Image alt="Apple logo" src="/apple.png" width={24} height={24} />
               <div>Register through Apple</div>
             </div>
-            <div className="or">Or</div>
-            <div className="register-container">
-              <Link href="/signup">Create an account</Link>
+            <div className="or-container">
+              <div className="separator"></div>
+              <div>Or</div>
+              <div className="separator"></div>
             </div>
-            <div>Already have an account?</div>
-            <div className="register-container">
-              <Link href="/login">Log in</Link>
-            </div>
+            <Link href="/signup" className="register-container">
+              Create an account
+            </Link>
+            <div className="reminder">Already have an account?</div>
+            <Link className="register-container" href="/login">
+              Log in
+            </Link>
           </div>
         </div>
       </div>
