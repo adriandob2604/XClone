@@ -41,6 +41,7 @@ export default function Profile(): JSX.Element {
             <div></div>
           </div>
         </nav>
+        
       </>
     );
   } else {

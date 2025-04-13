@@ -39,11 +39,9 @@ export default function Register(): JSX.Element {
       year: Yup.number().required("Required"),
       createdOn: Yup.date(),
     }),
-    onSubmit: (values) => {
-      setInitialInfo(values);
-    },
+    onSubmit: () => {},
   });
-  const registerForm = useFormik({
+  const secondInitialForm = useFormik({
     initialValues: {
       surname: "",
       phoneNumber: "",
@@ -56,22 +54,25 @@ export default function Register(): JSX.Element {
       username: Yup.string().max(16).required("Required"),
       password: Yup.string().max(16).required("Required"),
     }),
-    onSubmit: (values) => {
-      if (initialInfo) {
-        try {
-          axios
-            .post("/accounts", { ...initialInfo, ...values })
-            .then((response) => response.status)
-            .catch((error) =>
-              console.log("Error while creating an account", error)
-            );
-        } catch {
-          console.log("Error while fetching data");
-        }
-      }
-    },
+    onSubmit: () => {},
   });
-
+  const registerForm = () => {
+    const firstForm = initialForm;
+    const secondForm = secondInitialForm;
+    return useFormik({
+      initialValues: {
+        ...firstForm.values,
+        ...secondForm.values,
+      },
+      onSubmit: (values) => {
+        try {
+          axios.post("");
+        } catch {
+          console.log("Error while registering");
+        }
+      },
+    });
+  };
   return (
     <>
       {!isClicked ? (
@@ -153,7 +154,7 @@ export default function Register(): JSX.Element {
       ) : (
         <form
           className="account-detail-container"
-          onSubmit={registerForm.handleSubmit}
+          onSubmit={secondInitialForm.handleSubmit}
         >
           <div>
             <div className="account-details">
@@ -161,7 +162,7 @@ export default function Register(): JSX.Element {
               <input
                 type="text"
                 placeholder="Enter surname"
-                {...registerForm.getFieldProps("surname")}
+                {...secondInitialForm.getFieldProps("surname")}
               />
             </div>
             <div className="account-details">
@@ -169,7 +170,7 @@ export default function Register(): JSX.Element {
               <input
                 type="text"
                 placeholder="Enter phone number"
-                {...registerForm.getFieldProps("phoneNumber")}
+                {...secondInitialForm.getFieldProps("phoneNumber")}
               />
             </div>
             <div className="account-details">
@@ -177,7 +178,7 @@ export default function Register(): JSX.Element {
               <input
                 type="text"
                 placeholder="Enter username"
-                {...registerForm.getFieldProps("username")}
+                {...secondInitialForm.getFieldProps("username")}
               />
             </div>
             <div className="account-details">
@@ -185,7 +186,7 @@ export default function Register(): JSX.Element {
               <input
                 type="password"
                 placeholder="Enter password"
-                {...registerForm.getFieldProps("password")}
+                {...secondInitialForm.getFieldProps("password")}
               />
             </div>
           </div>

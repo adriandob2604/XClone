@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - project_network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    networks:
+      - project_network
+  db:
+    container_name: db
+    image: mongo
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - project_network
+
+  cache:
+    build:
+      context: ./nginx
+    container_name: cache
+    volumes:
+      - nginx_cache:/var/cache/nginx
+    ports:
+      - "80:80"
+    networks:
+      - project_network
+
+volumes:
+  mongo_data:
+  nginx_cache:
+
+networks:
+  project_network:
+    name: project_network
