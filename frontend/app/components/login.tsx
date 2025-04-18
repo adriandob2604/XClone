@@ -4,14 +4,18 @@ import Link from "next/link";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
 export default function Login(): JSX.Element {
+  const [clicked, setClicked] = useState<boolean>(false);
   const LoginForm = useFormik({
     initialValues: {
       inputValue: "",
+      password: "",
     },
     validationSchema: Yup.object({
       inputValue: Yup.string().max(32).required("Required"),
+      password: Yup.string().max(32).required("Required"),
     }),
     onSubmit: (values) => {
       axios
@@ -26,19 +30,40 @@ export default function Login(): JSX.Element {
   });
   return (
     <>
-      <div>Log in through Google</div>
-      <div>Log in through Apple</div>
-      <span>Or</span>
-      <div>
-        <span>Number, email or username</span>
-        <input type="text" {...LoginForm.getFieldProps("inputValue")} />
-        <button>Next</button>
-      </div>
-      <button>Forgot password?</button>
-      <div>
-        <span>Don't have an account?</span>
-        <Link href={"/"}>Register</Link>
-      </div>
+      {!clicked && (
+        <>
+          <div>Log in through Google</div>
+          <div>Log in through Apple</div>
+          <span>Or</span>
+          <div>
+            <span>Number, email or username</span>
+            <input type="text" {...LoginForm.getFieldProps("inputValue")} />
+            <button onClick={() => setClicked((previous) => !previous)}>
+              Next
+            </button>
+          </div>
+          <button>Forgot password?</button>
+          <div>
+            <span>Don't have an account?</span>
+            <Link href={"/"}>Register</Link>
+          </div>
+        </>
+      )}
+      {clicked && (
+        <>
+          <nav>
+            <div>
+              <button>x</button>
+              {/* <Image></Image> */}
+            </div>
+          </nav>
+          <h2>Enter your password</h2>
+          <div>
+            <div></div>
+            <div></div>
+          </div>
+        </>
+      )}
     </>
   );
 }

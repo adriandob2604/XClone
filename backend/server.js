@@ -1,8 +1,9 @@
-import pg from 'pg';
-const { Client } = pg;
-const client = new Client();
-const app = require('express')();
-
-app.get("/:username", (req, res) => {
-    req.params.username
+const mongoose = require('mongoose');
+const express = require("express")
+const app = express()
+app.use(express.json())
+DB_URL = "mongodb://localhost:27017/db"
+mongoose.connect(DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })

@@ -1,6 +1,7 @@
 "use client";
 import { JSX, useState } from "react";
 import { useFormik } from "formik";
+import { v4 as uuidv4 } from "uuid";
 import * as Yup from "yup";
 import { RegisterDateInfo } from "./utils";
 import axios from "axios";
@@ -24,6 +25,7 @@ export default function Register(): JSX.Element {
   });
   const initialForm = useFormik({
     initialValues: {
+      id: uuidv4(),
       name: "",
       email: "",
       month: "",
@@ -32,6 +34,7 @@ export default function Register(): JSX.Element {
       createdOn: new Date(),
     },
     validationSchema: Yup.object({
+      id: Yup.string().uuid().required("Required"),
       name: Yup.string().max(32).required("Required"),
       email: Yup.string().email().max(32).required("Required"),
       month: Yup.string().required("Required"),
@@ -52,7 +55,13 @@ export default function Register(): JSX.Element {
       surname: Yup.string().max(32).required("Required"),
       phoneNumber: Yup.string().max(9).required("Required"),
       username: Yup.string().max(16).required("Required"),
-      password: Yup.string().max(16).required("Required"),
+      password: Yup.string()
+        .max(16)
+        .required("Required")
+        .matches(
+          /^.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*$/,
+          "Need one special character"
+        ),
     }),
     onSubmit: () => {},
   });
