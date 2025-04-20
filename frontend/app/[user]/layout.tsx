@@ -1,9 +1,8 @@
-import React, { JSX } from "react";
-
+import React, { JSX, ReactNode } from "react";
 export default function ProfileLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }): JSX.Element {
   return <>{children}</>;
 }

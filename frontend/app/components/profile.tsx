@@ -1,49 +1,57 @@
 "use client";
 import axios from "axios";
 import { JSX, useEffect, useState } from "react";
-import Image from "next/image";
+import { useRouter } from "next/router";
+
+type UserData = {
+  username: string;
+  name: string;
+  surname: string;
+  password: string;
+  email: string;
+  phoneNumber: string;
+  createdOn: Date;
+};
 
 export default function Profile(): JSX.Element {
   const url = "localhost:5000";
+  const router = useRouter();
   const [userData, setUserData] = useState({});
   const [posts, setPosts] = useState({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [username, setUsername] = useState<string>("");
   useEffect(() => {
-    if (sessionStorage.getItem("username")) {
-      const username = sessionStorage.getItem("username") || "";
-      setUsername(username);
+    const username = sessionStorage.getItem("username");
+    const token = sessionStorage.getItem("token");
+    try {
       axios
-        .get(`${url}/${username}`)
-        .then((response) => setUserData(response.data))
-        .catch((error) => console.error(error))
-        .finally(() => setIsLoading(false));
+        .get(`${url}/${username}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setUserData(response.data);
+        });
+    } catch (err) {
+      console.error("Error while loading user data", err);
     }
   }, []);
-  useEffect(() => {
-    if (username) {
-      axios
-        .get(`${url}/${username}/posts`)
-        .then((response) => setPosts(response.data))
-        .catch((error) => console.error(error));
-    }
-  });
-  if (!isLoading) {
+  if (userData) {
+    setIsLoading(false);
+  }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  } else {
     return (
       <>
-        <nav className="profile-navbar">
-          <Image></Image>
+        <nav>
+          <button>Home</button>
           <div>
-            <h4>
-              {userData.name} {userData.surname}
-            </h4>
-            <div>{posts.count}</div>
             <div></div>
+            <p></p>
           </div>
         </nav>
       </>
     );
-  } else {
-    return <>Loading...</>;
   }
 }

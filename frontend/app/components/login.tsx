@@ -1,13 +1,15 @@
 "use client";
 import { JSX, useState } from "react";
 import Link from "next/link";
-import { useFormik } from "formik";
+import { Formik, useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { authOptions } from "../api/auth/[...nextauth]/route";
+import { useRouter } from "next/navigation";
 
 export default function Login(): JSX.Element {
   const [clicked, setClicked] = useState<boolean>(false);
+  const router = useRouter();
   const LoginForm = useFormik({
     initialValues: {
       inputValue: "",
@@ -21,8 +23,11 @@ export default function Login(): JSX.Element {
       axios
         .post("/login", values)
         .then((response) => {
-          if (response.data) {
-            sessionStorage.setItem("username", JSON.stringify(response.data));
+          if (response.status === 200 && response.data) {
+            console.log(response.status);
+            sessionStorage.setItem("token", JSON.stringify(response.data));
+            sessionStorage.setItem("username", values.inputValue);
+            router.push("/home");
           }
         })
         .catch((error) => console.log("Error while logging in", error));
@@ -45,7 +50,7 @@ export default function Login(): JSX.Element {
           <button>Forgot password?</button>
           <div>
             <span>Don't have an account?</span>
-            <Link href={"/"}>Register</Link>
+            <Link href={"/signup"}>Sign up</Link>
           </div>
         </>
       )}
@@ -53,11 +58,17 @@ export default function Login(): JSX.Element {
         <>
           <nav>
             <div>
-              <button>x</button>
+              <button onClick={() => setClicked((previous) => !previous)}>
+                x
+              </button>
               {/* <Image></Image> */}
             </div>
           </nav>
           <h2>Enter your password</h2>
+          <form onSubmit={LoginForm.handleSubmit}>
+            <input type="password" {...LoginForm.getFieldProps("password")} />
+            <button type="submit">Log in</button>
+          </form>
           <div>
             <div></div>
             <div></div>

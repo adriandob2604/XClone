@@ -1,10 +1,15 @@
 "use client";
-import { JSX, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import PostComponent from "./post";
 export default function Home(): JSX.Element {
   const [postClicked, setPostClicked] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | null>(null);
+  useEffect(() => {
+    const user = sessionStorage.getItem("username");
+    setUsername(user);
+  }, []);
   return (
     <>
       <section className="section-container">
@@ -39,7 +44,7 @@ export default function Home(): JSX.Element {
           </div>
           <div className="section-element">
             {/* <Image alt="profile" src="/" /> */}
-            <Link href="/profile">Profile</Link>
+            <Link href={`/${username}}`}>Profile</Link>
           </div>
           <div className="section-element">
             {/* <Image alt="settings" src="/" /> */}
@@ -68,6 +73,7 @@ export default function Home(): JSX.Element {
           setPostClicked={setPostClicked}
         />
       )}
+      <article></article>
     </>
   );
 }

@@ -5,33 +5,42 @@ import { v4 as uuidv4 } from "uuid";
 import * as Yup from "yup";
 import { RegisterDateInfo } from "./utils";
 import axios from "axios";
-export interface AccountDetails {
+import { useRouter } from "next/navigation";
+type AccountDetails = {
   name: string;
   email: string;
   month: string;
   day: number;
   year: number;
   createdOn: Date;
-}
+  birthDate: Date;
+};
 export default function Register(): JSX.Element {
+  const url = "http://localhost:5000";
+  const router = useRouter();
   const [isClicked, setIsClicked] = useState<boolean>(false);
-  const [initialInfo, setInitialInfo] = useState<AccountDetails>({
-    name: "",
-    email: "",
-    month: "",
-    day: 0,
-    year: 0,
-    createdOn: new Date(),
-  });
-  const initialForm = useFormik({
+
+  const initialYear = 0;
+  const initialMonth = "";
+  const initialDay = 0;
+  const birthDate = `${initialYear}-${RegisterDateInfo(
+    initialYear
+  ).months.findIndex((month: string) => month === initialMonth)}-${initialDay}`;
+
+  const registerForm = useFormik({
     initialValues: {
       id: uuidv4(),
       name: "",
+      surname: "",
+      phoneNumber: "",
+      username: "",
+      password: "",
       email: "",
-      month: "",
-      day: 0,
-      year: 0,
+      month: initialMonth,
+      day: initialDay,
+      year: initialYear,
       createdOn: new Date(),
+      birthDate: birthDate,
     },
     validationSchema: Yup.object({
       id: Yup.string().uuid().required("Required"),
@@ -41,17 +50,7 @@ export default function Register(): JSX.Element {
       day: Yup.number().required("Required"),
       year: Yup.number().required("Required"),
       createdOn: Yup.date(),
-    }),
-    onSubmit: () => {},
-  });
-  const secondInitialForm = useFormik({
-    initialValues: {
-      surname: "",
-      phoneNumber: "",
-      username: "",
-      password: "",
-    },
-    validationSchema: Yup.object({
+      birthDate: Yup.date(),
       surname: Yup.string().max(32).required("Required"),
       phoneNumber: Yup.string().max(9).required("Required"),
       username: Yup.string().max(16).required("Required"),
@@ -63,39 +62,37 @@ export default function Register(): JSX.Element {
           "Need one special character"
         ),
     }),
-    onSubmit: () => {},
+    onSubmit: (values) => {
+      try {
+        axios
+          .post(`${url}/signup`, { ...values })
+          .then((response) => {
+            console.log(response.status);
+            router.push("/home");
+          })
+          .catch((err) => console.error("Error while posting", err));
+      } catch {
+        console.error("Error while registering");
+      }
+    },
   });
-  const registerForm = () => {
-    const firstForm = initialForm;
-    const secondForm = secondInitialForm;
-    return useFormik({
-      initialValues: {
-        ...firstForm.values,
-        ...secondForm.values,
-      },
-      onSubmit: (values) => {
-        try {
-          axios.post("");
-        } catch {
-          console.log("Error while registering");
-        }
-      },
-    });
-  };
   return (
-    <>
+    <form
+      className="account-detail-container"
+      onSubmit={registerForm.handleSubmit}
+    >
       {!isClicked ? (
-        <form onSubmit={initialForm.handleSubmit}>
+        <>
           <div className="account-details">
             <input
               type="text"
               placeholder="Name"
-              {...initialForm.getFieldProps("name")}
+              {...registerForm.getFieldProps("name")}
             />
             <input
               type="text"
               placeholder="E-mail"
-              {...initialForm.getFieldProps("email")}
+              {...registerForm.getFieldProps("email")}
             />
           </div>
           <div className="birth-date-details">
@@ -107,12 +104,12 @@ export default function Register(): JSX.Element {
               <select
                 name="month"
                 id="month"
-                onChange={initialForm.handleChange}
-                onBlur={initialForm.handleBlur}
-                value={initialForm.values.month}
+                onChange={registerForm.handleChange}
+                onBlur={registerForm.handleBlur}
+                value={registerForm.values.month}
               >
-                {initialForm.values.year &&
-                  RegisterDateInfo(initialForm.values.year).months.map(
+                {registerForm.values.year &&
+                  RegisterDateInfo(registerForm.values.year).months.map(
                     (month: string) => <option key={month}>{month}</option>
                   )}
               </select>
@@ -122,14 +119,14 @@ export default function Register(): JSX.Element {
               <select
                 name="day"
                 id="day"
-                onChange={initialForm.handleChange}
-                onBlur={initialForm.handleBlur}
-                value={initialForm.values.day}
+                onChange={registerForm.handleChange}
+                onBlur={registerForm.handleBlur}
+                value={registerForm.values.day}
               >
-                {initialForm.values.month &&
-                  initialForm.values.year &&
-                  RegisterDateInfo(initialForm.values.year).days[
-                    initialForm.values.month
+                {registerForm.values.month &&
+                  registerForm.values.year &&
+                  RegisterDateInfo(registerForm.values.year).days[
+                    registerForm.values.month
                   ].map((day: number) => <option key={day}>{day}</option>)}
               </select>
             </label>
@@ -138,11 +135,11 @@ export default function Register(): JSX.Element {
               <select
                 name="year"
                 id="year"
-                onChange={initialForm.handleChange}
-                onBlur={initialForm.handleBlur}
-                value={initialForm.values.year}
+                onChange={registerForm.handleChange}
+                onBlur={registerForm.handleBlur}
+                value={registerForm.values.year}
               >
-                {RegisterDateInfo(initialForm.values.year).years.map(
+                {RegisterDateInfo(registerForm.values.year).years.map(
                   (year: number) => (
                     <option key={year}>{year}</option>
                   )
@@ -151,27 +148,28 @@ export default function Register(): JSX.Element {
             </label>
           </div>
           <button
-            type="submit"
-            disabled={Object.values(initialForm.values).some(
-              (value: string | number | Date) => !value
-            )}
+            type="button"
+            disabled={
+              !registerForm.values.name ||
+              !registerForm.values.email ||
+              !registerForm.values.year ||
+              !registerForm.values.month ||
+              !registerForm.values.day
+            }
             onClick={() => setIsClicked((previous: boolean) => !previous)}
           >
             Next
           </button>
-        </form>
+        </>
       ) : (
-        <form
-          className="account-detail-container"
-          onSubmit={secondInitialForm.handleSubmit}
-        >
+        <>
           <div>
             <div className="account-details">
               <span>Surname</span>
               <input
                 type="text"
                 placeholder="Enter surname"
-                {...secondInitialForm.getFieldProps("surname")}
+                {...registerForm.getFieldProps("surname")}
               />
             </div>
             <div className="account-details">
@@ -179,7 +177,7 @@ export default function Register(): JSX.Element {
               <input
                 type="text"
                 placeholder="Enter phone number"
-                {...secondInitialForm.getFieldProps("phoneNumber")}
+                {...registerForm.getFieldProps("phoneNumber")}
               />
             </div>
             <div className="account-details">
@@ -187,7 +185,7 @@ export default function Register(): JSX.Element {
               <input
                 type="text"
                 placeholder="Enter username"
-                {...secondInitialForm.getFieldProps("username")}
+                {...registerForm.getFieldProps("username")}
               />
             </div>
             <div className="account-details">
@@ -195,7 +193,7 @@ export default function Register(): JSX.Element {
               <input
                 type="password"
                 placeholder="Enter password"
-                {...secondInitialForm.getFieldProps("password")}
+                {...registerForm.getFieldProps("password")}
               />
             </div>
           </div>
@@ -204,8 +202,19 @@ export default function Register(): JSX.Element {
           >
             Go back
           </button>
-        </form>
+          <button
+            type="submit"
+            disabled={
+              !registerForm.values.surname ||
+              !registerForm.values.phoneNumber ||
+              !registerForm.values.username ||
+              !registerForm.values.password
+            }
+          >
+            Sign up
+          </button>
+        </>
       )}
-    </>
+    </form>
   );
 }
