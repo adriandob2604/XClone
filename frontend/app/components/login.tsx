@@ -8,29 +8,39 @@ import { authOptions } from "../api/auth/[...nextauth]/route";
 import { useRouter } from "next/navigation";
 
 export default function Login(): JSX.Element {
+  const url = "http://localhost:5000";
   const [clicked, setClicked] = useState<boolean>(false);
   const router = useRouter();
   const LoginForm = useFormik({
     initialValues: {
-      inputValue: "",
+      username: "",
       password: "",
     },
     validationSchema: Yup.object({
-      inputValue: Yup.string().max(32).required("Required"),
+      username: Yup.string().max(32).required("Required"),
       password: Yup.string().max(32).required("Required"),
     }),
-    onSubmit: (values) => {
-      axios
-        .post("/login", values)
-        .then((response) => {
-          if (response.status === 200 && response.data) {
-            console.log(response.status);
-            sessionStorage.setItem("token", JSON.stringify(response.data));
-            sessionStorage.setItem("username", values.inputValue);
-            router.push("/home");
+    onSubmit: async (values) => {
+      try {
+        console.log(values);
+        const response = await axios.post(
+          `${url}/login`,
+          { ...values },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        })
-        .catch((error) => console.log("Error while logging in", error));
+        );
+        if (response.status === 200) {
+          console.log(response.status);
+          localStorage.setItem("token", JSON.stringify(response.data.token));
+          localStorage.setItem("username", JSON.stringify(values.username));
+          router.push("/home");
+        }
+      } catch {
+        console.error("error while logging in!");
+      }
     },
   });
   return (
@@ -42,7 +52,7 @@ export default function Login(): JSX.Element {
           <span>Or</span>
           <div>
             <span>Number, email or username</span>
-            <input type="text" {...LoginForm.getFieldProps("inputValue")} />
+            <input type="text" {...LoginForm.getFieldProps("username")} />
             <button onClick={() => setClicked((previous) => !previous)}>
               Next
             </button>

@@ -20,59 +20,64 @@ export default function Register(): JSX.Element {
   const router = useRouter();
   const [isClicked, setIsClicked] = useState<boolean>(false);
 
-  const initialYear = 0;
-  const initialMonth = "";
-  const initialDay = 0;
-  const birthDate = `${initialYear}-${RegisterDateInfo(
-    initialYear
-  ).months.findIndex((month: string) => month === initialMonth)}-${initialDay}`;
-
   const registerForm = useFormik({
     initialValues: {
-      id: uuidv4(),
       name: "",
       surname: "",
-      phoneNumber: "",
       username: "",
       password: "",
       email: "",
-      month: initialMonth,
-      day: initialDay,
-      year: initialYear,
+      phoneNumber: "",
+      month: "",
+      day: 0,
+      year: 0,
       createdOn: new Date(),
-      birthDate: birthDate,
+      birthDate: new Date(),
     },
     validationSchema: Yup.object({
-      id: Yup.string().uuid().required("Required"),
       name: Yup.string().max(32).required("Required"),
-      email: Yup.string().email().max(32).required("Required"),
-      month: Yup.string().required("Required"),
-      day: Yup.number().required("Required"),
-      year: Yup.number().required("Required"),
-      createdOn: Yup.date(),
-      birthDate: Yup.date(),
       surname: Yup.string().max(32).required("Required"),
-      phoneNumber: Yup.string().max(9).required("Required"),
-      username: Yup.string().max(16).required("Required"),
+      username: Yup.string().min(5).max(16).required("Required"),
       password: Yup.string()
+        .min(5)
+        .max(16)
+        .required("Required")
         .max(16)
         .required("Required")
         .matches(
           /^.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*$/,
           "Need one special character"
         ),
+      email: Yup.string().email().max(32).required("Required"),
+      month: Yup.string().required("Required"),
+      day: Yup.number().required("Required"),
+      year: Yup.number().required("Required"),
+      phoneNumber: Yup.string().max(9).required("Required"),
+      createdOn: Yup.date().required("Required"),
+      birthDate: Yup.date().required("Required"),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
+      values = {
+        ...values,
+        birthDate: new Date(
+          values.year,
+          RegisterDateInfo(values.year).months.findIndex(
+            (month: string) => month === values.month
+          ),
+          values.day
+        ),
+      };
+      const { day, month, year, ...registerValues } = values;
+
       try {
-        axios
-          .post(`${url}/signup`, { ...values })
-          .then((response) => {
-            console.log(response.status);
-            router.push("/home");
-          })
-          .catch((err) => console.error("Error while posting", err));
+        const response = await axios.post(`${url}/users`, {
+          ...registerValues,
+        });
+        console.log(response.status);
+        router.push("/home");
       } catch {
         console.error("Error while registering");
+        console.log(registerValues);
       }
     },
   });

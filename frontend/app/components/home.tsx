@@ -7,7 +7,7 @@ export default function Home(): JSX.Element {
   const [postClicked, setPostClicked] = useState<boolean>(false);
   const [username, setUsername] = useState<string | null>(null);
   useEffect(() => {
-    const user = sessionStorage.getItem("username");
+    const user = JSON.parse(localStorage.getItem("username") || "");
     setUsername(user);
   }, []);
   return (
@@ -44,7 +44,7 @@ export default function Home(): JSX.Element {
           </div>
           <div className="section-element">
             {/* <Image alt="profile" src="/" /> */}
-            <Link href={`/${username}}`}>Profile</Link>
+            <Link href={`/${username}`}>Profile</Link>
           </div>
           <div className="section-element">
             {/* <Image alt="settings" src="/" /> */}
