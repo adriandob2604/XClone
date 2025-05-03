@@ -32,7 +32,7 @@ export default function Login(): JSX.Element {
             },
           }
         );
-        if (response.status === 200) {
+        if (response.status === 201) {
           console.log(response.status);
           localStorage.setItem("token", JSON.stringify(response.data.token));
           localStorage.setItem("username", JSON.stringify(values.username));

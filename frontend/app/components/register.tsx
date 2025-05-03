@@ -6,15 +6,7 @@ import * as Yup from "yup";
 import { RegisterDateInfo } from "./utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-type AccountDetails = {
-  name: string;
-  email: string;
-  month: string;
-  day: number;
-  year: number;
-  createdOn: Date;
-  birthDate: Date;
-};
+
 export default function Register(): JSX.Element {
   const url = "http://localhost:5000";
   const router = useRouter();

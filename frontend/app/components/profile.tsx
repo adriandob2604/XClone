@@ -65,9 +65,25 @@ export default function Profile(): JSX.Element {
             </div>
             <p>@{userData?.username}</p>
             <p>Joined {String(userData?.createdOn).split("T")[0]}</p>
+            <div>
+              <p>Following</p>
+              <p>Followers</p>
+            </div>
           </div>
         </div>
+        <footer>
+          <div>Posts</div>
+          <div>Replies</div>
+          <div>Highlights</div>
+          <div>Articles</div>
+          <div>Media</div>
+          <div>Likes</div>
+        </footer>
       </main>
+      <footer>
+        <header>Who to follow</header>
+        
+      </footer>
     </>
   );
 }

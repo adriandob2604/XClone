@@ -2,7 +2,7 @@
 import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import PostComponent from "./post";
+import Post from "./post";
 export default function Home(): JSX.Element {
   const [postClicked, setPostClicked] = useState<boolean>(false);
   const [username, setUsername] = useState<string | null>(null);
@@ -51,12 +51,9 @@ export default function Home(): JSX.Element {
             <Link href="/settings">Settings</Link>
           </div>
         </div>
-        <button
-          className="section-post"
-          onClick={() => setPostClicked((previous: boolean) => !previous)}
-        >
-          Post
-        </button>
+        <div className="section-post">
+          <Link href={"/compose/post"}>Post</Link>
+        </div>
 
         <div className="section-profile">
           {/* <Image alt="profile-pic" src="/" /> */}
@@ -67,12 +64,7 @@ export default function Home(): JSX.Element {
           {/* <Image alt="spread" src="/" /> */}
         </div>
       </section>
-      {postClicked && (
-        <PostComponent
-          postClicked={postClicked}
-          setPostClicked={setPostClicked}
-        />
-      )}
+
       <article></article>
     </>
   );
