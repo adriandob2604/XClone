@@ -1,9 +1,32 @@
-type DateInfo = {
+export type DateInfo = {
   months: string[];
   days: Record<string, number[]>;
   years: number[];
 };
-
+export type UserData = {
+  name: string;
+  surname: string;
+  username: string;
+  createdOn: Date;
+  image: File;
+};
+export type CommentData = {
+  user: UserData;
+  comment: string;
+  likes: number;
+};
+export type PostData = {
+  user: UserData;
+  text: string;
+  file: File;
+  comments: CommentData[];
+  tags: string[];
+  createdOn: Date;
+};
+export type DraftData = {
+  unsentPosts: PostData[];
+  scheduledPosts: PostData[];
+};
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;

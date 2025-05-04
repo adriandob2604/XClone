@@ -1,4 +1,4 @@
-export default function SettingsLayout({
+export default function AccountSettingsLayout({
   children,
 }: {
   children: React.ReactNode;
