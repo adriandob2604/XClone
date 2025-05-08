@@ -27,6 +27,11 @@ export type DraftData = {
   unsentPosts: PostData[];
   scheduledPosts: PostData[];
 };
+export type TrendingData = {
+  title: string
+  postCount: number
+}
+
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;

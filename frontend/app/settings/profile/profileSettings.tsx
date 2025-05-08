@@ -3,7 +3,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
-import { RegisterDateInfo } from "./utils";
+import { RegisterDateInfo } from "../utils";
 export default function ProfileSettings() {
   const url = "http://localhost:5000";
   const [birthday, setBirthday] = useState<boolean>(false);

@@ -1,4 +1,4 @@
-import ProfileSettings from "@/app/components/profileSettings";
+import ProfileSettings from "./profileSettings";
 import ProfileSettingsLayout from "./layout";
 export default function ProfileSettingsPage() {
   return (

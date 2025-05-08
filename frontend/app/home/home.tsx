@@ -1,13 +1,11 @@
 "use client";
 import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import Post from "./post";
-export default function Home(): JSX.Element {
-  const [postClicked, setPostClicked] = useState<boolean>(false);
+function Home(): JSX.Element {
   const [username, setUsername] = useState<string | null>(null);
+  const [moreClicked, setMoreClicked] = useState<boolean>(false);
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("username") || "");
+    const user = localStorage.getItem("username");
     setUsername(user);
   }, []);
   return (
@@ -48,7 +46,10 @@ export default function Home(): JSX.Element {
           </div>
           <div className="section-element">
             {/* <Image alt="settings" src="/" /> */}
-            <Link href="/settings">Settings</Link>
+            <button onClick={() => setMoreClicked((previous) => !previous)}>
+              More
+            </button>
+            {moreClicked && <Link href="/settings">Settings and privacy</Link>}
           </div>
         </div>
         <div className="section-post">
@@ -64,8 +65,8 @@ export default function Home(): JSX.Element {
           {/* <Image alt="spread" src="/" /> */}
         </div>
       </section>
-
-      <article></article>
     </>
   );
 }
+function HomePost() {}
+export default { Home, HomePost };

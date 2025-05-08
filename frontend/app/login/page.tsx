@@ -1,5 +1,5 @@
 import LoginLayout from "./layout";
-import Login from "../components/login";
+import Login from "./login";
 import { JSX } from "react";
 export default function LoginPage(): JSX.Element {
   return (

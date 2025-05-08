@@ -27,8 +27,8 @@ export default function Profile(): JSX.Element {
   const url = "http://localhost:5000";
   const [userData, setUserData] = useState<UserData | null>(null);
   const [posts, setPosts] = useState<PostData | null>(null);
-  const username = JSON.parse(localStorage.getItem("username") || "");
-  const token = JSON.parse(localStorage.getItem("token") || "");
+  const username = localStorage.getItem("username");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     try {
