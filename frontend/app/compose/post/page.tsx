@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import Post from "@/app/components/post";
+import Post from "@/app/[user]/status/[postId]/post";
 export default function PostPage() {
   return (
     <>
-      <Post />
+      <Post.CreatePost />
     </>
   );
 }

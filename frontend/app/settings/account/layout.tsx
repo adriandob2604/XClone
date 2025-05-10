@@ -5,7 +5,7 @@ export default function AccountSettingsLayout({
 }) {
   return (
     <div>
-      <h1>Settings Layout</h1>
+      <h2>Settings</h2>
       {children}
     </div>
   );

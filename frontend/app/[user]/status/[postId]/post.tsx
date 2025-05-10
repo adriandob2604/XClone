@@ -1,9 +1,11 @@
+import { PostData } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
-import React from "react";
+import { useParams, usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
-export default function Post() {
-  const url = "http://localhost:5000";
+const url = "http://localhost:5000";
+function CreatePost() {
   const postForm = useFormik({
     initialValues: {
       user: null,
@@ -55,3 +57,20 @@ export default function Post() {
     </>
   );
 }
+function GetPost() {
+  const [postData, setPostData] = useState<PostData | null>(null);
+  const pathname = usePathname();
+  useEffect(() => {
+    axios
+      .get(`${url}/${pathname}`)
+      .then((response) => setPostData(response.data))
+      .catch((err) => console.error(err));
+  }, [pathname]);
+}
+function UpdatePost() {
+  const url = "http://localhost:5000";
+  const token = localStorage.getItem("token");
+  return <></>;
+}
+
+export default { CreatePost, UpdatePost };

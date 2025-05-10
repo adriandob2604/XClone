@@ -42,14 +42,16 @@ function Home(): JSX.Element {
           </div>
           <div className="section-element">
             {/* <Image alt="profile" src="/" /> */}
-            <Link href={`/${username}`}>Profile</Link>
+            <Link href={`${username}`}>Profile</Link>
           </div>
           <div className="section-element">
             {/* <Image alt="settings" src="/" /> */}
             <button onClick={() => setMoreClicked((previous) => !previous)}>
               More
             </button>
-            {moreClicked && <Link href="/settings">Settings and privacy</Link>}
+            {moreClicked && (
+              <Link href="/settings/account">Settings and privacy</Link>
+            )}
           </div>
         </div>
         <div className="section-post">

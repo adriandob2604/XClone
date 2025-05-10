@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { DraftData } from "../utils";
+import { DraftData } from "@/app//utils";
 export default function UnsentPosts() {
   const url = "http://localhost:5000";
   const [data, setData] = useState<DraftData | null>(null);

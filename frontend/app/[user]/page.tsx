@@ -1,5 +1,5 @@
 import ProfileLayout from "./layout";
-import Profile from "../settings/profile/profile";
+import Profile from "./profile";
 export default function UserPage() {
   return (
     <ProfileLayout>
