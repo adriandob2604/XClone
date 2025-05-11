@@ -4,16 +4,20 @@ import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
 import { UserData, PostData } from "../utils";
 import { usePathname } from "next/navigation";
+import { GetPosts } from "./status/[postId]/post";
 
 export default function Profile() {
   const url = "http://localhost:5000";
   const [userData, setUserData] = useState<UserData | null>(null);
   const pathname = usePathname().slice(1);
-  const username = localStorage.getItem("username");
   const [isOwn, setIsOwn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
+  const [postCount, setPostCount] = useState<number>(0);
   useEffect(() => {
-    if (pathname === username) {
+    const user = localStorage.getItem("username");
+    if (pathname === user) {
       setIsOwn(true);
+      setUsername(user);
     }
     axios
       .get(`${url}/users/${pathname}`)
@@ -23,6 +27,14 @@ export default function Profile() {
       })
       .catch((err) => console.error(err));
   }, [pathname]);
+  useEffect(() => {
+    if (username) {
+      axios
+        .get(`${url}/${username}/postCount`)
+        .then((response) => setPostCount(response.data))
+        .catch((err) => console.error(err));
+    }
+  }, [username]);
   return (
     <>
       {userData && (
@@ -33,9 +45,9 @@ export default function Profile() {
             <div>
               {userData?.name} {userData?.surname}
             </div>
-            <p>{0} posts</p>
+            <p>{postCount} posts</p>
           </header>
-          <main>
+          <nav>
             <div>
               <div>
                 <div>
@@ -57,7 +69,9 @@ export default function Profile() {
                   </strong>
                 </div>
                 <p>@{userData?.username}</p>
-                <p>Joined {String(userData?.createdOn).split("T")[0]}</p>
+                <p>
+                  Joined {new Date(userData.createdOn).toLocaleDateString()}
+                </p>
                 <div>
                   <p>Following</p>
                   <p>Followers</p>
@@ -72,6 +86,9 @@ export default function Profile() {
               <Link href={`/${username}/media`}>Media</Link>
               <Link href={`/${username}/likes`}>Likes</Link>
             </footer>
+          </nav>
+          <main>
+            <GetPosts />
           </main>
           <footer>
             <header>Who to follow</header>

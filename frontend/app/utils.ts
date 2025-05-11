@@ -8,7 +8,6 @@ export type UserData = {
   surname: string;
   username: string;
   createdOn: Date;
-  image: File;
 };
 export type CommentData = {
   user: UserData;
@@ -22,6 +21,7 @@ export type PostData = {
   comments: CommentData[];
   tags: string[];
   createdOn: Date;
+  updatedAt: Date
 };
 export type DraftData = {
   unsentPosts: PostData[];

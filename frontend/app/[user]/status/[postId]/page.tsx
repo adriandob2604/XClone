@@ -1,4 +1,9 @@
 import PostLayout from "./layout";
+import { GetSinglePost } from "./post";
 export default function PostPage() {
-  return <PostLayout>x</PostLayout>;
+  return (
+    <PostLayout>
+      <GetSinglePost />
+    </PostLayout>
+  );
 }

@@ -1,4 +1,4 @@
-export default function TrendingLayout({
+export default function ForYouLayout({
   children,
 }: {
   children: React.ReactNode;
