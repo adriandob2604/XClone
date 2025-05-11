@@ -31,7 +31,6 @@ type User struct {
 	PhoneNumber string             `json:"phoneNumber" bson:"phoneNumber"`
 	CreatedOn   time.Time          `json:"createdOn" bson:"createdOn"`
 	BirthDate   time.Time          `json:"birthDate" bson:"birthDate"`
-	Image       []byte             `json:"image" bson:"image"`
 }
 type UserUpdateData struct {
 	Username    string    `json:"username"`
@@ -75,6 +74,7 @@ type LoginRequest struct {
 
 var mongoClient *mongo.Client
 var database *mongo.Database
+var key = []byte(os.Getenv("SECRET"))
 
 func connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -159,13 +159,24 @@ func UpdateUser(c *gin.Context) {
 	var updatedUser User
 	var updateData UserUpdateData
 	var foundUser User
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+	username := c.Param("username")
+	parsedUsername, err := DecodeJWT(token)
+	if username != parsedUsername {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
 	if err := c.ShouldBindJSON(&updateData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := database.Collection("users")
-	err := collection.FindOne(ctx, bson.M{"username": updateData.Username}).Decode(&foundUser)
+	err = collection.FindOne(ctx, bson.M{"username": updateData.Username}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -201,13 +212,24 @@ func DeleteUser(c *gin.Context) {
 	var deletedUser User
 	var user User
 	var foundUser User
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+	username := c.Param("username")
+	parsedUsername, err := DecodeJWT(token)
+	if username != parsedUsername {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := database.Collection("users")
-	err := collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
+	err = collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -258,8 +280,11 @@ func GetPost(c *gin.Context) {
 func UpdatePost(c *gin.Context) {
 	var updateData Post
 	var updatedPost Post
-	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err})
+	var foundPost Post
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
 	}
 	ctx := c.Request.Context()
 	collection := database.Collection("posts")
@@ -268,6 +293,25 @@ func UpdatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
+	err = collection.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	postOwnerUsername := foundPost.User.Username
+	parsedUsername, err := DecodeJWT(token)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+	if postOwnerUsername != parsedUsername {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+	}
+
 	err = collection.FindOneAndUpdate(ctx, bson.M{"_id": postId}, bson.M{"$set": updateData}).Decode(&updatedPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
@@ -277,11 +321,34 @@ func UpdatePost(c *gin.Context) {
 }
 func DeletePost(c *gin.Context) {
 	var deletedPost Post
+	var foundPost Post
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+
 	ctx := c.Request.Context()
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	collection := database.Collection("posts")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	err = collection.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	postOwnerUsername := foundPost.User.Username
+
+	parsedUsername, err := DecodeJWT(token)
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
+		return
+	}
+	if postOwnerUsername != parsedUsername {
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
 	err = collection.FindOneAndDelete(ctx, bson.M{"_id": postId}).Decode(&deletedPost)
@@ -324,6 +391,7 @@ func FindPostsWithTag(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 	}
+	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var currentPost Post
 		err := cursor.Decode(&currentPost)
@@ -343,6 +411,7 @@ func TrendingTags(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 	}
+	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var currentTag Tag
 		err := cursor.Decode(&currentTag)
@@ -385,6 +454,33 @@ func GenerateJWT(username string) (string, error) {
 
 	return s, nil
 
+}
+func VerifyJWT(tokenString string) (*jwt.Token, error) {
+
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !token.Valid {
+		return nil, fmt.Errorf("Token is invalid")
+	}
+	return token, nil
+}
+func DecodeJWT(tokenString string) (string, error) {
+	token, err := VerifyJWT(tokenString)
+	if err != nil {
+		return "", fmt.Errorf("Couldn't verify token")
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		username, ok := claims["username"].(string)
+		if !ok {
+			return "", fmt.Errorf("Couldn't verify username")
+		}
+		return username, nil
+	}
+	return "", fmt.Errorf("Token doesn't match")
 }
 func Login(c *gin.Context) {
 	var loginInfo LoginRequest
@@ -442,12 +538,15 @@ func init() {
 func main() {
 	router := gin.Default()
 	router.Use(cors.New(CORS()))
-	users := router.Group("/users")
-	users.POST("/", CreateUser)
-	users.GET("/:username", GetUser)
+	router.POST("/users", CreateUser)
+	router.GET("/users/:username", GetUser)
+	router.PUT("/users/:username", UpdateUser)
+	router.DELETE("/users/:username", DeleteUser)
 	router.POST("/login", Login)
 	router.GET("/posts/:id", GetPost)
 	router.GET("/:username/posts", GetPosts)
 	router.POST("/posts")
+	router.PUT("/:username/:postId", UpdatePost)
+	router.DELETE("/:username/:postId", DeletePost)
 	router.Run(":5000")
 }
