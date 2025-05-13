@@ -31,6 +31,18 @@ type User struct {
 	PhoneNumber string             `json:"phoneNumber" bson:"phoneNumber"`
 	CreatedOn   time.Time          `json:"createdOn" bson:"createdOn"`
 	BirthDate   time.Time          `json:"birthDate" bson:"birthDate"`
+	Followers   []Follower         `json:"followers" bson:"followers"`
+	Following   []Follower         `json:"following" bson:"following"`
+}
+type Follower struct {
+	FollowerID primitive.ObjectID `json:"followerId" bson:"followerId"`
+}
+type Comment struct {
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
+	Comment   string             `json:"comment" bson:"comment"`
+	Likes     int64              `json:"likes" bson:"likes"`
+	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
 }
 type UserUpdateData struct {
 	Username    string    `json:"username"`
@@ -47,21 +59,20 @@ type UserData struct {
 	Username  string    `json:"username" bson:"username"`
 	CreatedOn time.Time `json:"createdOn" bson:"createdOn"`
 }
-type Comment struct {
-	user    User
-	comment string
-	likes   int64
-}
 
 type Post struct {
 	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	User      User               `json:"user" bson:"user"`
+	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
 	Text      string             `json:"text" bson:"text"`
 	File      http.File          `json:"file" bson:"file"`
 	Comments  []Comment          `json:"comments" bson:"comments"`
 	Tags      []string           `json:"tags" bson:"tags"`
 	Likes     int64              `json:"likes" bson:"likes"`
 	CreatedOn string             `json:"createdOn" bson:"createdOn"`
+}
+type PostUpdateInput struct {
+	Text string   `json:"text,omitempty"`
+	Tags []string `json:"tags,omitempty"`
 }
 type Tag struct {
 	Posts []Post `json:"posts" bson:"posts"`
@@ -136,6 +147,27 @@ func GetUser(c *gin.Context) {
 		Username:  foundUser.Username,
 		CreatedOn: foundUser.CreatedOn,
 	})
+}
+func GetSessionUser(c *gin.Context) {
+	ctx := c.Request.Context()
+	var foundUser User
+	collection := database.Collection("users")
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+	decodedUsername, err := DecodeJWT(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+	err = collection.FindOne(ctx, bson.M{"username": decodedUsername}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"username": foundUser.Username, "name": foundUser.Name, "surname": foundUser.Surname, "createOn": foundUser.CreatedOn})
 }
 func CreateUser(c *gin.Context) {
 	var newUser User
@@ -278,41 +310,52 @@ func GetPost(c *gin.Context) {
 	c.JSON(http.StatusOK, foundPost)
 }
 func UpdatePost(c *gin.Context) {
-	var updateData Post
+	var updateData PostUpdateInput
 	var updatedPost Post
 	var foundPost Post
+	var foundUser User
 	token, err := GetToken(c)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
 	ctx := c.Request.Context()
-	collection := database.Collection("posts")
+	posts := database.Collection("posts")
+	users := database.Collection("users")
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	err = collection.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
+	err = posts.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
-	postOwnerUsername := foundPost.User.Username
+	postUserId := foundPost.UserID
+	err = users.FindOne(ctx, bson.M{"_id": postUserId}).Decode(&foundUser)
 	parsedUsername, err := DecodeJWT(token)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
-	if postOwnerUsername != parsedUsername {
+	if foundUser.Username != parsedUsername {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
 	if err := c.ShouldBindJSON(&updateData); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
 	}
-
-	err = collection.FindOneAndUpdate(ctx, bson.M{"_id": postId}, bson.M{"$set": updateData}).Decode(&updatedPost)
+	update := bson.M{}
+	if updateData.Text != "" {
+		update["text"] = updateData.Text
+	}
+	if updateData.Tags != nil {
+		update["tags"] = updateData.Tags
+	}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	err = posts.FindOneAndUpdate(ctx, bson.M{"_id": postId}, bson.M{"$set": update}, opts).Decode(&updatedPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -322,6 +365,7 @@ func UpdatePost(c *gin.Context) {
 func DeletePost(c *gin.Context) {
 	var deletedPost Post
 	var foundPost Post
+	var foundUser User
 	token, err := GetToken(c)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
@@ -330,28 +374,34 @@ func DeletePost(c *gin.Context) {
 
 	ctx := c.Request.Context()
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
-	collection := database.Collection("posts")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	err = collection.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
+	posts := database.Collection("posts")
+	users := database.Collection("users")
+	err = posts.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
-	postOwnerUsername := foundPost.User.Username
+	postUserId := foundPost.UserID
+	err = users.FindOne(ctx, bson.M{"_id": postUserId}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
 
 	parsedUsername, err := DecodeJWT(token)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
-	if postOwnerUsername != parsedUsername {
+	if foundUser.Username != parsedUsername {
 		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		return
 	}
-	err = collection.FindOneAndDelete(ctx, bson.M{"_id": postId}).Decode(&deletedPost)
+	err = posts.FindOneAndDelete(ctx, bson.M{"_id": postId}).Decode(&deletedPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -365,11 +415,11 @@ func GetPosts(c *gin.Context) {
 	collection := database.Collection("posts")
 	username := c.Param("username")
 	cursor, err := collection.Find(ctx, bson.M{"username": username})
-	defer cursor.Close(ctx)
 	if err != nil {
 		c.JSON(http.StatusNoContent, gin.H{"error": err})
 		return
 	}
+	defer cursor.Close(ctx)
 	for cursor.Next(ctx) {
 		var currentPost Post
 		err := cursor.Decode(&currentPost)
@@ -378,6 +428,53 @@ func GetPosts(c *gin.Context) {
 			return
 		}
 		foundPosts = append(foundPosts, currentPost)
+	}
+	c.JSON(http.StatusOK, gin.H{"posts": foundPosts, "postCount": len(foundPosts)})
+}
+func GetTodaysFollowingPosts(c *gin.Context) {
+	var foundUser User
+	currentDate := time.Now()
+	var foundPosts []Post
+	ctx := c.Request.Context()
+	users := database.Collection("users")
+	posts := database.Collection("posts")
+	token, err := GetToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+	decodedUsername, err := DecodeJWT(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		return
+	}
+
+	err = users.FindOne(ctx, bson.M{"username": decodedUsername}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	for _, userId := range foundUser.Following {
+		cursor, err := posts.Find(ctx, bson.M{"userId": userId, "createdOn": currentDate.Format("2006-01-02")})
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err})
+			return
+		}
+		defer cursor.Close(ctx)
+		for cursor.Next(ctx) {
+			var foundPost Post
+
+			err := cursor.Decode(&foundPost)
+			if err != nil {
+				c.JSON(http.StatusNoContent, gin.H{"error": err})
+				return
+			}
+			foundPosts = append(foundPosts, foundPost)
+		}
+	}
+	if len(foundPosts) == 0 {
+		c.JSON(http.StatusNoContent, gin.H{"message": "No posts from followed users today"})
+		return
 	}
 	c.JSON(http.StatusOK, foundPosts)
 }
@@ -453,7 +550,6 @@ func GenerateJWT(username string) (string, error) {
 	}
 
 	return s, nil
-
 }
 func VerifyJWT(tokenString string) (*jwt.Token, error) {
 
@@ -507,7 +603,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged in!", "token": token})
+	c.JSON(http.StatusCreated, gin.H{"message": "Successfully logged in!", "token": token})
 }
 func Logout(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -548,5 +644,7 @@ func main() {
 	router.POST("/posts")
 	router.PUT("/:username/:postId", UpdatePost)
 	router.DELETE("/:username/:postId", DeletePost)
+	router.GET("/trending", TrendingTags)
+	router.GET("/me", GetSessionUser)
 	router.Run(":5000")
 }
