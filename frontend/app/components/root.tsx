@@ -1,8 +1,38 @@
+"use client";
 import { JSX } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect } from "react";
+import keycloak from "../lib/keycloak";
+import { useRouter } from "next/navigation";
 
 export default function Root(): JSX.Element {
+  const router = useRouter();
+  const redirectUri = "http://localhost:3000/home";
+  useEffect(() => {
+    keycloak
+      .init({
+        onLoad: "check-sso",
+        silentCheckSsoRedirectUri:
+          window.location.origin + "/silent-check-sso.html",
+      })
+      .then((authenticated) => {
+        if (authenticated) {
+          router.push("/home");
+        }
+      });
+  }, [router]);
+  function handleLogin() {
+    keycloak.login({
+      redirectUri: redirectUri,
+    });
+  }
+  function SocialLogin(provider: string) {
+    keycloak.login({
+      idpHint: provider,
+      redirectUri: redirectUri,
+    });
+  }
   return (
     <main className="root-container">
       <div className="logo-container">
@@ -27,11 +57,15 @@ export default function Root(): JSX.Element {
                 width={24}
                 height={24}
               />
-              <div>Register through Google</div>
+              <button onClick={() => SocialLogin("google")}>
+                Register through Google
+              </button>
             </div>
             <div className="register-container">
               <Image alt="Apple logo" src="/apple.png" width={24} height={24} />
-              <div>Register through Apple</div>
+              <button onClick={() => SocialLogin("apple")}>
+                Register through Apple
+              </button>
             </div>
             <div className="or-container">
               <div className="separator"></div>
@@ -42,9 +76,7 @@ export default function Root(): JSX.Element {
               Create an account
             </Link>
             <div className="reminder">Already have an account?</div>
-            <Link className="register-container" href="/login">
-              Log in
-            </Link>
+            <button onClick={handleLogin}>Log in</button>
           </div>
         </div>
       </div>

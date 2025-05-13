@@ -1,3 +1,8 @@
+import ForYouLayout from "./layout";
 export default function ForYouPage() {
-  return <></>;
+  return (
+    <ForYouLayout>
+      <div>xd</div>
+    </ForYouLayout>
+  );
 }

@@ -1,8 +1,9 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { Home } from "@/app/home/home";
+import { LeftSideBar } from "@/app/home/home";
 import WhoToFollow from "@/app/components/whoToFollow";
 import Trending from "@/app/components/trending";
+import Searchbar from "../search/searchbar";
 
 export default function LayoutShell({
   children,
@@ -10,8 +11,7 @@ export default function LayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-
-  const showHome = !["/", "/login", "/signup"].includes(pathname);
+  const showHome = !["/login", "/signup"].includes(pathname);
   const showWhoToFollow = ![
     "/login",
     "/signup",
@@ -25,15 +25,24 @@ export default function LayoutShell({
     "/messages",
     "/settings",
   ].includes(pathname);
+  const showSearchBar = !["/messages"].includes(pathname);
   const isHomePage = pathname === "/";
   return (
-    <>
-      <section>{!isHomePage && showHome && <Home />}</section>
+    <main className="root-container">
+      <section>{!isHomePage && showHome && <LeftSideBar />}</section>
+      <nav>
+        {!isHomePage && showSearchBar && pathname === "/explore" && (
+          <Searchbar />
+        )}
+      </nav>
       <aside>
+        {!isHomePage && showSearchBar && pathname !== "/explore" && (
+          <Searchbar />
+        )}
         {!isHomePage && showWhoToFollow && <WhoToFollow />}
         {!isHomePage && showTrending && <Trending />}
       </aside>
-      <main>{children}</main>
-    </>
+      <div>{children}</div>
+    </main>
   );
 }

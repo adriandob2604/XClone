@@ -7,7 +7,7 @@ export const authOptions: AuthOptions = {
             clientSecret: process.env.KEYCLOAK_CLIENT_SECRET,
             issuer: process.env.KEYCLOAK_ISSUER
         })
-    ]
+    ],
 }
 const handler = NextAuth(authOptions)
 export {handler as GET, handler as POST}

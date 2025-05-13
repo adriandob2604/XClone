@@ -6,8 +6,11 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import React, { JSX, useEffect, useState } from "react";
 import * as Yup from "yup";
-const url = "http://localhost:5000";
+type PostProps = {
+  url: string;
+};
 export function CreatePost() {
+  const url = "http://localhost:5000";
   const FILE_SIZE = 160 * 1024;
   const postForm = useFormik({
     initialValues: {
@@ -69,15 +72,17 @@ export function CreatePost() {
     </>
   );
 }
-export function GetPosts() {
-  const [postData, setPostData] = useState<PostData[] | null>([]);
+
+export function GetPosts({ url }: PostProps) {
+  const [postData, setPostData] = useState<PostData[]>([]);
   const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const pathname = usePathname();
+  const pathname = usePathname().replace("/", "");
+
   useEffect(() => {
     axios
-      .get(`${url}/${pathname}`)
-      .then((response) => setPostData(response.data))
+      .get(url)
+      .then((response) => setPostData(response.data.posts))
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false));
   }, [pathname]);
@@ -86,9 +91,9 @@ export function GetPosts() {
   } else {
     return (
       <div>
-        {postData?.length !== 0 && (
+        {postData?.length > 0 && (
           <>
-            {postData?.map((post: PostData) => (
+            {postData.map((post: PostData) => (
               <div>
                 <div>
                   <span>{`${post.user.name} ${post.user.surname}`}</span>
@@ -126,6 +131,7 @@ export function GetPosts() {
   }
 }
 export function GetSinglePost() {
+  const url = "http://localhost:5000";
   const [postData, setPostData] = useState<PostData | null>(null);
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const pathname = usePathname();
@@ -160,6 +166,7 @@ export function GetSinglePost() {
   }
 }
 export function UpdatePost() {
+  const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const [postData, setPostData] = useState<PostData | null>(null);
   const pathname = usePathname();

@@ -1,10 +1,10 @@
 "use client";
-import { JSX, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
 import { Formik, useFormik } from "formik";
+import keycloak from "../lib/keycloak";
 import * as Yup from "yup";
 import axios from "axios";
-import { authOptions } from "../api/auth/[...nextauth]/route";
 import { useRouter } from "next/navigation";
 
 export default function Login(): JSX.Element {
@@ -22,7 +22,6 @@ export default function Login(): JSX.Element {
     }),
     onSubmit: async (values) => {
       try {
-        console.log(values);
         const response = await axios.post(
           `${url}/login`,
           { ...values },
@@ -33,9 +32,7 @@ export default function Login(): JSX.Element {
           }
         );
         if (response.status === 201) {
-          console.log(response.status);
-          localStorage.setItem("token", JSON.stringify(response.data.token));
-          localStorage.setItem("username", JSON.stringify(values.username));
+          localStorage.setItem("token", response.data.token);
           router.push("/home");
         }
       } catch {
@@ -43,6 +40,7 @@ export default function Login(): JSX.Element {
       }
     },
   });
+
   return (
     <>
       {!clicked && (
