@@ -478,6 +478,32 @@ func GetTodaysFollowingPosts(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, foundPosts)
 }
+func GetForYouPosts(c *gin.Context) {
+	currentDate := time.Now()
+	var foundPosts []Post
+	ctx := c.Request.Context()
+	posts := database.Collection("posts")
+	cursor, err := posts.Find(ctx, bson.M{"createdOn": currentDate.Format("2006-01-02")})
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var foundPost Post
+		err := cursor.Decode(&foundPost)
+		if err != nil {
+			c.JSON(http.StatusNoContent, gin.H{"error": err})
+			return
+		}
+		foundPosts = append(foundPosts, foundPost)
+	}
+	if len(foundPosts) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "No posts were posted today!"})
+		return
+	}
+	c.JSON(http.StatusOK, foundPosts)
+}
 
 func FindPostsWithTag(c *gin.Context) {
 	var posts []Post
