@@ -35,7 +35,9 @@ type User struct {
 	Following   []Follower         `json:"following" bson:"following"`
 }
 type Follower struct {
-	FollowerID primitive.ObjectID `json:"followerId" bson:"followerId"`
+	FollowerID primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID     primitive.ObjectID `bson:"userId"`
+	Username   string             `bson:"username"`
 }
 type Comment struct {
 	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
@@ -81,6 +83,18 @@ type Tag struct {
 type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
+}
+
+type History struct {
+	UserId   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Searches []Search           `json:"searches" bson:"searches"`
+}
+type Search struct {
+	SearchId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name     string             `json:"name" bson:"name"`
+}
+type SearchRequest struct {
+	SearchString string `json:"searchString"`
 }
 
 var mongoClient *mongo.Client
@@ -152,17 +166,12 @@ func GetSessionUser(c *gin.Context) {
 	ctx := c.Request.Context()
 	var foundUser User
 	collection := database.Collection("users")
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	decodedUsername, err := DecodeJWT(token)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
-		return
-	}
-	err = collection.FindOne(ctx, bson.M{"username": decodedUsername}).Decode(&foundUser)
+	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -184,37 +193,29 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, newUser)
+	c.JSON(http.StatusOK, gin.H{"message": "User created"})
 }
 
 func UpdateUser(c *gin.Context) {
 	var updatedUser User
 	var updateData UserUpdateData
 	var foundUser User
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
-	username := c.Param("username")
-	parsedUsername, err := DecodeJWT(token)
-	if username != parsedUsername {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
-	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
 	ctx := c.Request.Context()
+
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	collection := database.Collection("users")
-	err = collection.FindOne(ctx, bson.M{"username": updateData.Username}).Decode(&foundUser)
+	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
-	if !VerifyPassword(updateData.Password, foundUser.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong password"})
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	updateFields := bson.M{}
@@ -233,7 +234,7 @@ func UpdateUser(c *gin.Context) {
 	if !updateData.BirthDate.IsZero() {
 		updateFields["birthDate"] = updateData.BirthDate
 	}
-	err = collection.FindOneAndUpdate(ctx, bson.M{"username": updateData.Username}, bson.M{"$set": updateData}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedUser)
+	err = collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$set": updateFields}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedUser)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
@@ -244,33 +245,26 @@ func DeleteUser(c *gin.Context) {
 	var deletedUser User
 	var user User
 	var foundUser User
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
+
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	username := c.Param("username")
-	parsedUsername, err := DecodeJWT(token)
-	if username != parsedUsername {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
+
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := database.Collection("users")
-	err = collection.FindOne(ctx, bson.M{"username": user.Username}).Decode(&foundUser)
+
+	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
 	}
-	if !VerifyPassword(user.Password, foundUser.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong password"})
-		return
-	}
-	err = collection.FindOneAndDelete(ctx, bson.M{"username": foundUser.Username}).Decode(&deletedUser)
+	err = collection.FindOneAndDelete(ctx, bson.M{"_id": decodedId}).Decode(&deletedUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -281,12 +275,22 @@ func DeleteUser(c *gin.Context) {
 func CreatePost(c *gin.Context) {
 	var post Post
 	post.ID = primitive.NewObjectID()
+
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	post.UserID = decodedId.(primitive.ObjectID)
+	ctx := c.Request.Context()
+	collection := database.Collection("posts")
+
 	if err := c.ShouldBindJSON(&post); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx := c.Request.Context()
-	collection := database.Collection("posts")
+
 	_, err := collection.InsertOne(ctx, post)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -312,39 +316,22 @@ func GetPost(c *gin.Context) {
 func UpdatePost(c *gin.Context) {
 	var updateData PostUpdateInput
 	var updatedPost Post
-	var foundPost Post
-	var foundUser User
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
+
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+
 	ctx := c.Request.Context()
 	posts := database.Collection("posts")
-	users := database.Collection("users")
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
-	err = posts.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err})
-		return
-	}
-	postUserId := foundPost.UserID
-	err = users.FindOne(ctx, bson.M{"_id": postUserId}).Decode(&foundUser)
-	parsedUsername, err := DecodeJWT(token)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
-	if foundUser.Username != parsedUsername {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
 	if err := c.ShouldBindJSON(&updateData); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 	update := bson.M{}
@@ -355,7 +342,7 @@ func UpdatePost(c *gin.Context) {
 		update["tags"] = updateData.Tags
 	}
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-	err = posts.FindOneAndUpdate(ctx, bson.M{"_id": postId}, bson.M{"$set": update}, opts).Decode(&updatedPost)
+	err = posts.FindOneAndUpdate(ctx, bson.M{"_id": postId, "userId": decodedId}, bson.M{"$set": update}, opts).Decode(&updatedPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -364,14 +351,11 @@ func UpdatePost(c *gin.Context) {
 }
 func DeletePost(c *gin.Context) {
 	var deletedPost Post
-	var foundPost Post
-	var foundUser User
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-
 	ctx := c.Request.Context()
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
@@ -379,29 +363,8 @@ func DeletePost(c *gin.Context) {
 		return
 	}
 	posts := database.Collection("posts")
-	users := database.Collection("users")
-	err = posts.FindOne(ctx, bson.M{"_id": postId}).Decode(&foundPost)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err})
-		return
-	}
-	postUserId := foundPost.UserID
-	err = users.FindOne(ctx, bson.M{"_id": postUserId}).Decode(&foundUser)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err})
-		return
-	}
 
-	parsedUsername, err := DecodeJWT(token)
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
-	if foundUser.Username != parsedUsername {
-		c.JSON(http.StatusForbidden, gin.H{"error": err})
-		return
-	}
-	err = posts.FindOneAndDelete(ctx, bson.M{"_id": postId}).Decode(&deletedPost)
+	err = posts.FindOneAndDelete(ctx, bson.M{"_id": postId, "userId": decodedId}).Decode(&deletedPost)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -431,25 +394,67 @@ func GetPosts(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": foundPosts, "postCount": len(foundPosts)})
 }
-func GetTodaysFollowingPosts(c *gin.Context) {
+func FollowUser(c *gin.Context) {
+	var foundUser User
+	var follower Follower
+	follower.FollowerID = primitive.NewObjectID()
+	username := c.Param("username")
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	collection := database.Collection("users")
+	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	follower.UserID = foundUser.ID
+	follower.Username = foundUser.Username
+
+	collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$addToSet": bson.M{"following": follower}})
+
+	c.JSON(http.StatusOK, gin.H{"message": "New follower added"})
+}
+func UnfollowUser(c *gin.Context) {
+	var foundUser User
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := database.Collection("users")
+	username := c.Param("username")
+	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&foundUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"following": bson.M{"userId": foundUser.ID}}})
+	if result.Err() != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully unfollowed user"})
+}
+func GetFollowingPosts(c *gin.Context) {
 	var foundUser User
 	currentDate := time.Now()
 	var foundPosts []Post
 	ctx := c.Request.Context()
 	users := database.Collection("users")
 	posts := database.Collection("posts")
-	token, err := GetToken(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
-		return
-	}
-	decodedUsername, err := DecodeJWT(token)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	err = users.FindOne(ctx, bson.M{"username": decodedUsername}).Decode(&foundUser)
+	err := users.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err})
 		return
@@ -549,6 +554,82 @@ func TrendingTags(c *gin.Context) {
 	c.JSON(http.StatusOK, tags)
 
 }
+func PostHistoryItem(c *gin.Context) {
+	var historyItem Search
+	var searchString SearchRequest
+	var updatedHistory History
+	historyItem.SearchId = primitive.NewObjectID()
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	if err := c.ShouldBindJSON(&searchString); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+	historyItem.Name = searchString.SearchString
+	ctx := c.Request.Context()
+	collection := database.Collection("history")
+	err := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$push": bson.M{"searches": historyItem}}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedHistory)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "History Item added!"})
+}
+func GetHistory(c *gin.Context) {
+	var history History
+	ctx := c.Request.Context()
+	collection := database.Collection("history")
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&history)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, history.Searches)
+}
+func DeleteHistoryItem(c *gin.Context) {
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	itemId := c.Param("id")
+	ctx := c.Request.Context()
+	collection := database.Collection("history")
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"searches": bson.M{"_id": itemId}}})
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully removed item"})
+}
+func DeleteHistory(c *gin.Context) {
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := database.Collection("history")
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": decodedId},
+		bson.M{"$set": bson.M{"searches": []Search{}}},
+	)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "History deleted"})
+}
 func GetToken(c *gin.Context) (string, error) {
 	header := c.GetHeader("Authorization")
 	if header == "" {
@@ -590,19 +671,40 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	}
 	return token, nil
 }
-func DecodeJWT(tokenString string) (string, error) {
+func DecodeJWT(tokenString string) (primitive.ObjectID, error) {
 	token, err := VerifyJWT(tokenString)
 	if err != nil {
-		return "", fmt.Errorf("Couldn't verify token")
+		return primitive.NilObjectID, fmt.Errorf("Couldn't verify token")
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		username, ok := claims["username"].(string)
+		id, ok := claims["id"].(string)
 		if !ok {
-			return "", fmt.Errorf("Couldn't verify username")
+			return primitive.NilObjectID, fmt.Errorf("Couldn't verify id")
 		}
-		return username, nil
+		objectId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return primitive.NilObjectID, err
+		}
+
+		return objectId, nil
 	}
-	return "", fmt.Errorf("Token doesn't match")
+	return primitive.NilObjectID, fmt.Errorf("Token doesn't match")
+}
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token, err := GetToken(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+			return
+		}
+		decodedId, err := DecodeJWT(token)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+			return
+		}
+		c.Set("userId", decodedId)
+		c.Next()
+	}
 }
 func Login(c *gin.Context) {
 	var loginInfo LoginRequest
@@ -658,19 +760,28 @@ func init() {
 	}
 }
 func main() {
+	gin.SetMode(gin.DebugMode)
 	router := gin.Default()
 	router.Use(cors.New(CORS()))
 	router.POST("/users", CreateUser)
 	router.GET("/users/:username", GetUser)
-	router.PUT("/users/:username", UpdateUser)
-	router.DELETE("/users/:username", DeleteUser)
+	router.PUT("/users/:username", AuthMiddleware(), UpdateUser)
+	router.DELETE("/users/:username", AuthMiddleware(), DeleteUser)
 	router.POST("/login", Login)
 	router.GET("/posts/:id", GetPost)
 	router.GET("/:username/posts", GetPosts)
-	router.POST("/posts")
-	router.PUT("/:username/:postId", UpdatePost)
-	router.DELETE("/:username/:postId", DeletePost)
+	router.POST("/posts", AuthMiddleware(), CreatePost)
+	router.PUT("/:username/:postId", AuthMiddleware(), UpdatePost)
+	router.DELETE("/:username/:postId", AuthMiddleware(), DeletePost)
 	router.GET("/trending", TrendingTags)
-	router.GET("/me", GetSessionUser)
+	router.GET("/me", AuthMiddleware(), GetSessionUser)
+	router.GET("/for_you_posts", AuthMiddleware(), GetForYouPosts)
+	router.GET("/following_posts", AuthMiddleware(), GetFollowingPosts)
+	router.GET("/history", AuthMiddleware(), GetHistory)
+	router.POST("/history", AuthMiddleware(), PostHistoryItem)
+	router.DELETE("/history/:id", AuthMiddleware(), DeleteHistoryItem)
+	router.DELETE("/history", AuthMiddleware(), DeleteHistory)
+	router.POST("/followers", AuthMiddleware(), FollowUser)
+	router.DELETE("/followers/:username", AuthMiddleware(), UnfollowUser)
 	router.Run(":5000")
 }
