@@ -1,16 +1,22 @@
 "use client";
+import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 export default function Notifications() {
   const pathname = usePathname();
-  const [notifications, setNotifications] = useState([]);
+  const url = "http://localhost:5000";
+  const token = localStorage.getItem("token");
+  const [notifications, setNotifications] = useState<string[]>([]);
   useEffect(() => {
-    const notifs = localStorage.getItem("notifications");
-    if (notifs) {
-      setNotifications(JSON.parse(notifs));
-    }
-  }, [notifications]);
+    axios
+      .get(`${url}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => setNotifications(response.data));
+  }, [token]);
   return (
     <>
       <header>
@@ -20,8 +26,6 @@ export default function Notifications() {
         </nav>
         <nav>
           <Link href={`${pathname}/`}>All</Link>
-          <Link href={`${pathname}/verified`}>Verified</Link>
-          <Link href={`${pathname}/mentions`}>Mentions</Link>
         </nav>
       </header>
       <main>

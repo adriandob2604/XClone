@@ -1,5 +1,5 @@
 "use client";
-import { PostData } from "@/app/utils";
+import { PostData, UserData } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
@@ -10,8 +10,20 @@ type PostProps = {
   url: string;
 };
 export function CreatePost() {
+  const [user, setUser] = useState<UserData | null>(null);
+  const token = localStorage.getItem("token");
   const url = "http://localhost:5000";
   const FILE_SIZE = 160 * 1024;
+  useEffect(() => {
+    axios
+      .get(`${url}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => setUser(response.data))
+      .catch((err) => console.error(err));
+  }, []);
   const postForm = useFormik({
     initialValues: {
       user: null,
@@ -78,10 +90,14 @@ export function GetPosts({ url }: PostProps) {
   const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const pathname = usePathname().replace("/", "");
-
+  const token = localStorage.getItem("token");
   useEffect(() => {
     axios
-      .get(url)
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((response) => setPostData(response.data.posts))
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false));

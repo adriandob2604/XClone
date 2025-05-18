@@ -25,7 +25,7 @@ export default function LayoutShell({
     "/messages",
     "/settings",
   ].includes(pathname);
-  const showSearchBar = !["/messages"].includes(pathname);
+  const showSearchBar = !["/messages", "/search"].includes(pathname);
   const isHomePage = pathname === "/";
   return (
     <main className="root-container">
@@ -36,9 +36,10 @@ export default function LayoutShell({
         )}
       </nav>
       <aside>
-        {!isHomePage && showSearchBar && pathname !== "/explore" && (
-          <Searchbar />
-        )}
+        {!isHomePage &&
+          showSearchBar &&
+          pathname !== "/explore" &&
+          showHome && <Searchbar />}
         {!isHomePage && showWhoToFollow && <WhoToFollow />}
         {!isHomePage && showTrending && <Trending />}
       </aside>

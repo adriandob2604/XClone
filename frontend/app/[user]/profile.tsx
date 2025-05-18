@@ -14,22 +14,23 @@ export default function Profile() {
   const [postCount, setPostCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const token = localStorage.getItem("token");
-  const username = localStorage.getItem("username");
-
   useEffect(() => {
-    const pathUsername = pathname.replace("/", "");
-    const isOwn = pathUsername === username;
-    const customHeaders = isOwn ? { Authorization: `Bearer ${token}` } : {};
-    axios
-      .get(`${url}/users/${pathname}`, {
-        headers: customHeaders,
-      })
-      .then((response) => {
+    if (token) {
+      axios
+        .get(`${url}/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          setUserData(response.data);
+          setIsOwn(response.data.username === pathname);
+        });
+    } else {
+      axios.get(`${url}/users/${pathname}`).then((response) => {
         setUserData(response.data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setIsLoading(false));
-  }, [pathname, username, token]);
+        setIsOwn(false);
+      });
+    }
+  }, [token, pathname]);
   if (isLoading) {
     return <p>Loading...</p>;
   } else {
@@ -77,16 +78,18 @@ export default function Profile() {
                 </div>
               </div>
               <footer>
-                <Link href={`/${username}`}>Posts</Link>
-                <Link href={`/${username}/with_replies`}>Replies</Link>
-                <Link href={`/${username}/highlights`}>Highlights</Link>
-                <Link href={`/${username}/articles`}>Articles</Link>
-                <Link href={`/${username}/media`}>Media</Link>
-                <Link href={`/${username}/likes`}>Likes</Link>
+                <Link href={`/${userData.username}`}>Posts</Link>
+                <Link href={`/${userData.username}/with_replies`}>Replies</Link>
+                <Link href={`/${userData.username}/highlights`}>
+                  Highlights
+                </Link>
+                <Link href={`/${userData.username}/articles`}>Articles</Link>
+                <Link href={`/${userData.username}/media`}>Media</Link>
+                <Link href={`/${userData.username}/likes`}>Likes</Link>
               </footer>
             </nav>
             <main>
-              <GetPosts />
+              <GetPosts url={`${url}/${userData.username}/posts`} />
             </main>
             <footer>
               <header>Who to follow</header>

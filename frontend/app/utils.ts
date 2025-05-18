@@ -31,7 +31,14 @@ export type TrendingData = {
   title: string
   postCount: number
 }
-
+export type SearchItem = {
+  id: string;
+  input: string;
+};
+export type History = {
+  id: string
+  searches: SearchItem[]
+}
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;

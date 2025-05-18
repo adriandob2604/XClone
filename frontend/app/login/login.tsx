@@ -11,6 +11,23 @@ export default function Login(): JSX.Element {
   const url = "http://localhost:5000";
   const [clicked, setClicked] = useState<boolean>(false);
   const router = useRouter();
+  const handleKeycloakLogin = () => {
+    keycloak
+      .init({
+        onLoad: "login-required",
+      })
+      .then((authenticated) => {
+        if (authenticated) {
+          localStorage.setItem("token", JSON.stringify(keycloak.token));
+          router.push("/home");
+        }
+      });
+  };
+  const handleSocialLogin = () => {
+    keycloak.init({
+      onLoad: "login-required",
+    });
+  };
   const LoginForm = useFormik({
     initialValues: {
       username: "",
@@ -21,23 +38,21 @@ export default function Login(): JSX.Element {
       password: Yup.string().max(32).required("Required"),
     }),
     onSubmit: async (values) => {
-      try {
-        const response = await axios.post(
-          `${url}/login`,
-          { ...values },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
+      console.log(values);
+      axios
+        .post(`${url}/login`, values, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          if (response.status === 201) {
+            console.log("Successfully logged in");
+            localStorage.setItem("token", response.data.token);
+            router.push("/home");
           }
-        );
-        if (response.status === 201) {
-          localStorage.setItem("token", response.data.token);
-          router.push("/home");
-        }
-      } catch {
-        console.error("error while logging in!");
-      }
+        })
+        .catch((err) => console.error(err));
     },
   });
 
@@ -45,8 +60,9 @@ export default function Login(): JSX.Element {
     <>
       {!clicked && (
         <>
-          <div>Log in through Google</div>
-          <div>Log in through Apple</div>
+          <button>Log in through Google</button>
+          <button>Log in through Apple</button>
+          <button onClick={handleKeycloakLogin}>Login through Keycloak</button>
           <span>Or</span>
           <div>
             <span>Number, email or username</span>
