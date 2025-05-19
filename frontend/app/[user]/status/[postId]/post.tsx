@@ -3,14 +3,14 @@ import { PostData, UserData } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
-import React, { JSX, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 type PostProps = {
   url: string;
 };
 export function CreatePost() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const token = localStorage.getItem("token");
   const url = "http://localhost:5000";
   const FILE_SIZE = 160 * 1024;
@@ -21,18 +21,15 @@ export function CreatePost() {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => setUser(response.data))
+      .then((response) => setUserData(response.data))
       .catch((err) => console.error(err));
   }, []);
   const postForm = useFormik({
     initialValues: {
-      user: null,
       text: "",
       file: null,
-      createdOn: new Date(),
     },
     validationSchema: Yup.object({
-      user: Yup.object().required("Required"),
       text: Yup.string().max(256).required("Required"),
       file: Yup.mixed()
         .required("Required")
@@ -41,16 +38,42 @@ export function CreatePost() {
           "File too large",
           (value) => value instanceof File && value && value.size <= FILE_SIZE
         ),
-      createdOn: Yup.date().required("Required"),
     }),
     onSubmit: async (values) => {
+      const notificationMessage = `${userData?.username} posted!`;
+      const formData = new FormData();
+      formData.append("userId", userData?.id || "");
+      formData.append("text", values.text);
+      if (values.file) {
+        formData.append("file", values.file);
+      }
       try {
-        const response = await axios.post(`${url}/posts`, { ...values });
-        if (response.status === 201) {
-          console.log("Succesfully posted");
+        const [postResponse, notificationResponse] = await Promise.all([
+          axios.post(`${url}/posts`, formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.post(
+            `${url}/notifications`,
+            {
+              notification: notificationMessage,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          ),
+        ]);
+        if (
+          postResponse.status === 201 &&
+          notificationResponse.status === 201
+        ) {
+          console.log("Successfully posted");
         }
-      } catch {
-        console.error("Couldn't post");
+      } catch (err) {
+        console.error(err);
       }
     },
   });
@@ -63,7 +86,11 @@ export function CreatePost() {
         </header>
         <div>
           <div>Image</div>
-          <input type="text" placeholder="What is happening?!" />
+          <input
+            type="text"
+            placeholder="What is happening?!"
+            {...postForm.getFieldProps("text")}
+          />
         </div>
         <footer>
           <input

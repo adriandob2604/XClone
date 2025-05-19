@@ -4,6 +4,7 @@ export type DateInfo = {
   years: number[];
 };
 export type UserData = {
+  id: string;
   name: string;
   surname: string;
   username: string;
@@ -38,6 +39,14 @@ export type SearchItem = {
 export type History = {
   id: string
   searches: SearchItem[]
+}
+export type Message = {
+  message: string
+  createdOn: Date
+}
+export type Chat = {
+  id: string
+  user: UserData
 }
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
