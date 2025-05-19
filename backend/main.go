@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -11,6 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -22,11 +27,148 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type User struct {
+	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	BackgroundImage string             `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
+	ProfileImage    string             `json:"profileImageUrl" bson:"profileImageUrl"`
+	Name            string             `json:"name" bson:"name"`
+	Surname         string             `json:"surname" bson:"surname"`
+	Username        string             `json:"username" bson:"username"`
+	Password        string             `json:"password" bson:"password"`
+	Email           string             `json:"email" bson:"email"`
+	PhoneNumber     string             `json:"phoneNumber" bson:"phoneNumber"`
+	CreatedOn       time.Time          `json:"createdOn" bson:"createdOn"`
+	BirthDate       time.Time          `json:"birthDate" bson:"birthDate"`
+	Followers       []Follower         `json:"followers" bson:"followers"`
+	Following       []Follower         `json:"following" bson:"following"`
+	Notifications   []Notification     `json:"notifications" bson:"notifications"`
+	Chats           []Chat             `json:"chats" bson:"chats"`
+}
+type Follower struct {
+	UserID   primitive.ObjectID `bson:"userId"`
+	Username string             `json:"username" bson:"username"`
+}
+type FollowerData struct {
+	Username string `json:"username" bson:"username"`
+}
+type Comment struct {
+	CommentId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Comment   string             `json:"comment" bson:"comment"`
+	Likes     int64              `json:"likes" bson:"likes"`
+	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
+}
+type UserUpdateData struct {
+	Username    string    `json:"username"`
+	Password    string    `json:"password"`
+	Name        string    `json:"name"`
+	Surname     string    `json:"surname"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phoneNumber" `
+	BirthDate   time.Time `json:"birthDate" `
+}
+type UserData struct {
+	BackgroundImage string     `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
+	ProfileImage    string     `json:"profileImageUrl" bson:"profileImageUrl"`
+	Name            string     `json:"name" bson:"name"`
+	Surname         string     `json:"surname" bson:"surname"`
+	Username        string     `json:"username" bson:"username"`
+	CreatedOn       time.Time  `json:"createdOn" bson:"createdOn"`
+	Followers       []Follower `json:"followers" bson:"followers"`
+	Following       []Follower `json:"following" bson:"following"`
+}
+
+type Post struct {
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
+	Text      string             `json:"text" bson:"text"`
+	File      string             `json:"fileUrl" bson:"fileUrl"`
+	Comments  []Comment          `json:"comments" bson:"comments"`
+	Tags      []string           `json:"tags" bson:"tags"`
+	Likes     int64              `json:"likes" bson:"likes"`
+	CreatedOn time.Time          `json:"createdOn" bson:"createdOn"`
+}
+type PostUpdateInput struct {
+	Text string   `json:"text,omitempty"`
+	Tags []string `json:"tags,omitempty"`
+}
+type Tag struct {
+	Tag   string `json:"tag" bson:"tag"`
+	Posts []Post `json:"posts" bson:"posts"`
+}
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type History struct {
+	UserId   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Searches []Search           `json:"searches" bson:"searches"`
+}
+type Search struct {
+	SearchId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Input    string             `json:"input" bson:"input"`
+}
+type SearchRequest struct {
+	Input string `json:"input"`
+}
+type Notification struct {
+	NotificationId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Notification   time.Time          `json:"notification" bson:"notification"`
+	CreatedOn      time.Time          `json:"createdOn" bson:"createdOn"`
+}
+
+type Chat struct {
+	ChatId   primitive.ObjectID    `json:"id,omitempty" bson:"_id,omitempty"`
+	UserIds  [2]primitive.ObjectID `json:"userIds" bson:"userIds"`
+	Messages []Message             `json:"messages" bson:"messages"`
+}
+type Message struct {
+	MessageId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserId    primitive.ObjectID `json:"userId" bson:"userId"`
+	Message   string             `json:"message" bson:"message"`
+	CreatedOn time.Time          `json:"createdOn" bson:"createdOn"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`
+}
+
 var mongoClient *mongo.Client
 var database *mongo.Database
-var currentDate = time.Now()
-var timeFormat = currentDate.Format("2006-01-02")
+var S3Client *s3.Client
+var uploader *manager.Uploader
+var downloader *manager.Downloader
 
+func ConnectAWS() error {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return err
+	}
+	S3Client = s3.NewFromConfig(cfg)
+	uploader = manager.NewUploader(S3Client)
+	downloader = manager.NewDownloader(S3Client)
+	return nil
+}
+func UploadFile(bucket, key string, file io.Reader) error {
+	_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   file,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func DownloadFile(bucket, key string) ([]byte, error) {
+	buffer := manager.NewWriteAtBuffer([]byte{})
+	_, err := downloader.Download(context.TODO(), buffer, &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to download file: %w", err)
+	}
+
+	return buffer.Bytes(), nil
+}
 func connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 	defer cancel()
@@ -97,7 +239,7 @@ func GetSessionUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"username": foundUser.Username, "name": foundUser.Name, "surname": foundUser.Surname, "createdOn": foundUser.CreatedOn})
+	c.JSON(http.StatusOK, gin.H{"id": decodedId, "username": foundUser.Username, "name": foundUser.Name, "surname": foundUser.Surname, "createdOn": foundUser.CreatedOn})
 }
 func CreateUser(c *gin.Context) {
 	var newUser User
@@ -204,6 +346,7 @@ func CreatePost(c *gin.Context) {
 	}
 
 	post.UserID = decodedId.(primitive.ObjectID)
+	post.CreatedOn = time.Now()
 	ctx := c.Request.Context()
 	collection := database.Collection("posts")
 
@@ -335,7 +478,6 @@ func FollowUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	follower.FollowerID = primitive.NewObjectID()
 	follower.UserID = foundUser.ID
 	follower.Username = foundUser.Username
 
@@ -397,7 +539,7 @@ func GetFollowingPosts(c *gin.Context) {
 		return
 	}
 	for _, userId := range foundUser.Following {
-		cursor, err := posts.Find(ctx, bson.M{"userId": userId, "createdOn": currentDate.Format("2006-01-02")})
+		cursor, err := posts.Find(ctx, bson.M{"userId": userId, "createdOn": time.Now()})
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -424,7 +566,7 @@ func GetForYouPosts(c *gin.Context) {
 	var foundPosts []Post
 	ctx := c.Request.Context()
 	posts := database.Collection("posts")
-	cursor, err := posts.Find(ctx, bson.M{"createdOn": timeFormat})
+	cursor, err := posts.Find(ctx, bson.M{"createdOn": time.Now()})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -669,7 +811,7 @@ func PostNotification(c *gin.Context) {
 		return
 	}
 	notification.NotificationId = primitive.NewObjectID()
-	notification.CreatedOn = timeFormat
+	notification.CreatedOn = time.Now()
 	for _, follower := range foundUser.Followers {
 		result := collection.FindOneAndUpdate(ctx, bson.M{"_id": follower.UserID}, bson.M{"$push": bson.M{"notifications": notification}})
 		if result.Err() != nil {
@@ -678,6 +820,43 @@ func PostNotification(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Successfully sent a notifications"})
+}
+func GetChat(c *gin.Context) {
+	var foundChat Chat
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	chatId := c.Param("id")
+	ctx := c.Request.Context()
+	collection := database.Collection("chats")
+	err := collection.FindOne(ctx, bson.M{"_id": chatId, "userIds": decodedId}).Decode(&foundChat)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, foundChat.Messages)
+}
+func UpdateChatMessage(c *gin.Context) {
+	var messageToUpdate Message
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	if err := c.ShouldBindJSON(&messageToUpdate); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := database.Collection("messages")
+	err := collection.FindOneAndUpdate(ctx, bson.M{"_id": messageToUpdate.MessageId, "userId": decodedId}, bson.M{"$set": bson.M{"message": messageToUpdate.Message, "updatedAt": time.Now()}})
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Err()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully updated message!"})
 }
 func GetToken(c *gin.Context) (string, error) {
 	header := c.GetHeader("Authorization")
@@ -808,6 +987,9 @@ func init() {
 	if err := connect(); err != nil {
 		log.Fatal("Couldn't connect to database")
 	}
+	if err := ConnectAWS(); err != nil {
+		log.Fatal("Couldn't connect to aws")
+	}
 }
 func main() {
 	gin.SetMode(gin.DebugMode)
@@ -835,5 +1017,7 @@ func main() {
 	router.POST("/followers", AuthMiddleware(), FollowUser)
 	router.DELETE("/followers/:username", AuthMiddleware(), UnfollowUser)
 	router.GET("/:username/followers", AuthMiddleware(), Followers)
+	router.GET("/notifications", AuthMiddleware(), GetNotifications)
+	router.POST("/notifications", AuthMiddleware(), PostNotification)
 	router.Run(":5000")
 }
