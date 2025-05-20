@@ -6,9 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
-type PostProps = {
-  url: string;
-};
+
 export function CreatePost() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const token = localStorage.getItem("token");
@@ -31,13 +29,11 @@ export function CreatePost() {
     },
     validationSchema: Yup.object({
       text: Yup.string().max(256).required("Required"),
-      file: Yup.mixed()
-        .required("Required")
-        .test(
-          "fileSize",
-          "File too large",
-          (value) => value instanceof File && value && value.size <= FILE_SIZE
-        ),
+      file: Yup.mixed().test(
+        "fileSize",
+        "File too large",
+        (value) => value instanceof File && value && value.size <= FILE_SIZE
+      ),
     }),
     onSubmit: async (values) => {
       const notificationMessage = `${userData?.username} posted!`;
@@ -56,9 +52,7 @@ export function CreatePost() {
           }),
           axios.post(
             `${url}/notifications`,
-            {
-              notification: notificationMessage,
-            },
+            { notification: notificationMessage },
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -81,8 +75,7 @@ export function CreatePost() {
     <>
       <form onSubmit={postForm.handleSubmit}>
         <header>
-          <button>Back</button>
-          <button>Drafts</button>
+          <Link href={"/home"}>Back</Link>
         </header>
         <div>
           <div>Image</div>
@@ -95,25 +88,23 @@ export function CreatePost() {
         <footer>
           <input
             type="file"
-            name="file"
+            name="Media"
             accept="image/*, video/*"
             multiple={true}
             onChange={(event) =>
               postForm.setFieldValue("file", event.currentTarget.files?.[0])
             }
           />
-          <button>Gif</button>
-          <button>Emoji</button>
         </footer>
-
         <button type="submit">Post</button>
       </form>
     </>
   );
 }
 
-export function GetPosts({ url }: PostProps) {
+export function GetPosts({ url }: { url: string }) {
   const [postData, setPostData] = useState<PostData[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
   const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const pathname = usePathname().replace("/", "");
@@ -125,81 +116,88 @@ export function GetPosts({ url }: PostProps) {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => setPostData(response.data.posts))
+      .then((response) => {
+        if (response.data.posts) {
+          setPostData(response.data.posts);
+        }
+        setUser(response.data.user);
+      })
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false));
   }, [pathname]);
   if (isLoading) {
     return <></>;
-  } else {
-    return (
-      <div>
-        {postData?.length > 0 && (
-          <>
-            {postData.map((post: PostData) => (
-              <div>
-                <div>
-                  <span>{`${post.user.name} ${post.user.surname}`}</span>
-                  <span>@{post.user.username}</span>
-                  <span>{post.createdOn.getHours()}h</span>
-                  <button
-                    onClick={() =>
-                      setOptionsClicked((previous: boolean) => !previous)
-                    }
-                  >
-                    Options
-                  </button>
-                  {optionsClicked && (
-                    <>
-                      <button>Delete</button>
-                      <button>Edit</button>
-                    </>
-                  )}
-                </div>
-                <div>
-                  <button>Like</button>
-                  <button>Comment</button>
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-        {postData?.length === 0 && (
-          <>
-            <h2>No posts were found</h2>
-          </>
-        )}
-      </div>
-    );
   }
+  return (
+    <div>
+      {postData.length !== 0 && user && (
+        <>
+          {postData.map((post: PostData) => (
+            <div>
+              <div>
+                <span>{`${user.name} ${user.surname}`}</span>
+                <span>@{user.username}</span>
+                <span>{post.createdOn.getHours()}h</span>
+                <button
+                  onClick={() =>
+                    setOptionsClicked((previous: boolean) => !previous)
+                  }
+                >
+                  Options
+                </button>
+                {optionsClicked && (
+                  <>
+                    <button>Delete</button>
+                    <button>Edit</button>
+                  </>
+                )}
+              </div>
+              <div>
+                <button>Like</button>
+                <button>Comment</button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      {postData.length === 0 && (
+        <>
+          <h2>No posts were found</h2>
+        </>
+      )}
+    </div>
+  );
 }
 export function GetSinglePost() {
   const url = "http://localhost:5000";
   const [postData, setPostData] = useState<PostData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const pathname = usePathname();
   const postId = pathname.split("/")[-1];
-  const username = localStorage.getItem("username");
   useEffect(() => {
     axios
       .get(`${url}/posts/${postId}`)
-      .then((response) => setPostData(response.data))
+      .then((response) => {
+        setPostData(response.data.post);
+        setUserData(response.data.user);
+      })
       .catch((err) => console.error(err));
   }, [postId]);
-  if (postData) {
+  if (postData && userData) {
     return (
       <>
         <header>
-          <Link href={`/${username}`}>Back</Link>
+          <Link href={`/${userData.username}`}>Back</Link>
           <h4>Post</h4>
         </header>
         <nav>
           {/* <Image></Image> */}
           <div>
             <span>
-              {postData.user.name} {postData.user.surname}
+              {userData.name} {userData.surname}
             </span>
-            <span>@{postData.user.username}</span>
+            <span>@{userData.username}</span>
           </div>
           <button>More</button>
           {/* {moreClicked && } */}

@@ -11,16 +11,20 @@ export type UserData = {
   createdOn: Date;
 };
 export type CommentData = {
-  user: UserData;
+  id: string;
+  userId: string
   comment: string;
   likes: number;
+  createdAt: Date
 };
 export type PostData = {
-  user: UserData;
+  id: string
+  userId: string;
   text: string;
   file: File;
   comments: CommentData[];
   tags: string[];
+  likes: number;
   createdOn: Date;
   updatedAt: Date
 };
@@ -47,6 +51,11 @@ export type Message = {
 export type Chat = {
   id: string
   user: UserData
+}
+export type Notification = {
+  id: string
+  notification: string
+  createdOn: Date
 }
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {

@@ -3,11 +3,12 @@ import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Notification } from "../utils";
 export default function Notifications() {
   const pathname = usePathname();
   const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
-  const [notifications, setNotifications] = useState<string[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   useEffect(() => {
     axios
       .get(`${url}/notifications`, {
@@ -42,7 +43,9 @@ export default function Notifications() {
           {notifications.length !== 0 && (
             <>
               {notifications.map((notification) => {
-                <div>{notification}</div>;
+                <div key={notification.id}>
+                  <div>{notification.notification}</div>;
+                </div>;
               })}
             </>
           )}

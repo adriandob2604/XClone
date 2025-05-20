@@ -7,7 +7,6 @@ export default function FollowersLayout({
 }) {
   return (
     <section>
-      <h2>Followers</h2>
       <div>{children}</div>
     </section>
   );

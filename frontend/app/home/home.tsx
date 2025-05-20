@@ -11,17 +11,20 @@ export function LeftSideBar(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const token = localStorage.getItem("token");
   useEffect(() => {
-    if (token) {
-      axios
-        .get(`${url}/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => setUserData(response.data))
-        .catch((err) => console.error(err))
-        .finally(() => setIsLoading(false));
-    }
+    const controller = new AbortController();
+    axios
+      .get(`${url}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal: controller.signal,
+      })
+      .then((response) => setUserData(response.data))
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
+    return () => {
+      controller.abort();
+    };
   }, []);
   if (isLoading) {
     return <p>Loading...</p>;
@@ -45,10 +48,6 @@ export function LeftSideBar(): JSX.Element {
           <div className="section-element">
             {/* <Image alt="messages" src="/" /> */}
             <Link href="/messages">Messages</Link>
-          </div>
-          <div className="section-element">
-            {/* <Image alt="lists" src="/" /> */}
-            <Link href="/lists">Lists</Link>
           </div>
           <div className="section-element">
             {/* <Image alt="bookmarks" src="/" /> */}
