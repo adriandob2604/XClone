@@ -224,15 +224,23 @@ func ToFollow(c *gin.Context) {
 		}
 		users = append(users, currentUser)
 	}
-	for i := 0; i < len(users); i++ {
-		if len(usersToFollow) == 3 {
-			break
-		}
-		usersToFollow = append(usersToFollow, users[rand.Intn(len(users))])
+	if len(users) > 0 && len(users) <= 3 {
+		c.JSON(http.StatusOK, users)
+		return
 	}
-	if len(usersToFollow) == 0 {
+	if len(users) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No users to follow!"})
 		return
+	}
+
+	usedIndexes := make(map[int]bool)
+	for len(usersToFollow) < 3 {
+		randomIndex := rand.Intn(len(users))
+		if !usedIndexes[randomIndex] {
+			usersToFollow = append(usersToFollow, users[randomIndex])
+			usedIndexes[randomIndex] = true
+		}
+
 	}
 	c.JSON(http.StatusOK, usersToFollow)
 }
