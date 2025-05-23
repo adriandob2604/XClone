@@ -7,48 +7,50 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type FollowerId struct {
+	ID primitive.ObjectID `json:"id" bson:"_id"`
+}
+
 func FollowUser(c *gin.Context) {
-	var foundUser users.User
+	var foundUser users.UserData
 	var follower users.Follower
-	var username users.FollowerData
+	var userId FollowerId
 	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	if err := c.ShouldBindJSON(&username); err != nil {
+	if err := c.ShouldBindJSON(&userId); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if decodedId == userId.ID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "You cannot follow yourself"})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	err := collection.FindOne(ctx, bson.M{"username": username.Username}).Decode(&foundUser)
+	err := collection.FindOne(ctx, bson.M{"_id": userId.ID}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	follower.UserID = foundUser.ID
+	follower.UserID = userId.ID
 	follower.Username = foundUser.Username
 
 	update := bson.M{
-		"$setOnInsert": bson.M{
-			"following": []users.Follower{},
-		},
 		"$addToSet": bson.M{
 			"following": follower,
 		},
 	}
 
-	updateOptions := options.FindOneAndUpdate().SetUpsert(true)
-
 	result := collection.FindOneAndUpdate(
 		ctx,
 		bson.M{"_id": decodedId},
 		update,
-		updateOptions,
 	)
 	if result.Err() != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
@@ -62,11 +64,11 @@ func UnfollowUser(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+	userId := c.Param("userId")
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	username := c.Param("username")
 
-	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"following": bson.M{"username": username}}})
+	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"following": bson.M{"userId": userId}}})
 	if result.Err() != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
 		return
@@ -75,7 +77,7 @@ func UnfollowUser(c *gin.Context) {
 }
 
 func Followers(c *gin.Context) {
-	var user users.User
+	var user users.UserData
 	_, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

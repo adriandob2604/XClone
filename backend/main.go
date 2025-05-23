@@ -5,6 +5,7 @@ import (
 	"backend/aws"
 	"backend/chats"
 	"backend/db"
+	"backend/explore"
 	"backend/followers"
 	"backend/history"
 	"backend/login"
@@ -63,8 +64,8 @@ func main() {
 	router.POST("/history", authorization.AuthMiddleware(), history.PostHistoryItem)
 	router.DELETE("/history/:id", authorization.AuthMiddleware(), history.DeleteHistoryItem)
 	router.DELETE("/history", authorization.AuthMiddleware(), history.DeleteHistory)
-	router.POST("/followers", authorization.AuthMiddleware(), followers.FollowUser)
-	router.DELETE("/followers/:username", authorization.AuthMiddleware(), followers.UnfollowUser)
+	router.POST("/follow", authorization.AuthMiddleware(), followers.FollowUser)
+	router.DELETE("/unfollow/:userId", authorization.AuthMiddleware(), followers.UnfollowUser)
 	router.GET("/:username/followers", authorization.AuthMiddleware(), followers.Followers)
 	router.GET("/notifications", authorization.AuthMiddleware(), notifications.GetNotifications)
 	router.POST("/notifications", authorization.AuthMiddleware(), notifications.PostNotification)
@@ -72,5 +73,6 @@ func main() {
 	router.GET("/chats/:id", authorization.AuthMiddleware(), chats.GetChatMessages)
 	router.DELETE("/chats/:id", authorization.AuthMiddleware(), chats.DeleteChatMessage)
 	router.PATCH("/chats/:id", authorization.AuthMiddleware(), chats.UpdateChatMessage)
+	router.GET("/explore", authorization.AuthMiddleware(), explore.GetExploreSearches)
 	router.Run(":5000")
 }

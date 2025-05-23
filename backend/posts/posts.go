@@ -140,10 +140,10 @@ func DeletePost(c *gin.Context) {
 
 	err = posts.FindOneAndDelete(ctx, bson.M{"_id": postId, "userId": decodedId}).Decode(&deletedPost)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error(), "isOwn": false})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Post successfully deleted", "deletedPost": deletedPost.PostID})
+	c.JSON(http.StatusOK, gin.H{"message": "Post successfully deleted", "isOwn": true})
 }
 
 func GetPosts(c *gin.Context) {
