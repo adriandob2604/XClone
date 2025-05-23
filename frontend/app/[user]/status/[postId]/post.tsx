@@ -14,7 +14,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
-  const [isOwn, setIsOwn] = useState<boolean>(false);
+  const [isOwn, setIsOwn] = useState<boolean[]>([]);
   const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
   const deletePost = async (postId: string, index: number) => {
     try {
@@ -23,7 +23,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      setIsOwn(response.data.isOwn);
+      // setIsOwn(response.data.isOwn);
       if (response.status === 200) {
         setPostDeleted(
           (previous: boolean[]) => ((previous[index] = true), [...previous])
