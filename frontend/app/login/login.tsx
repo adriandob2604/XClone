@@ -38,7 +38,6 @@ export default function Login(): JSX.Element {
       password: Yup.string().max(32).required("Required"),
     }),
     onSubmit: async (values) => {
-      console.log(values);
       axios
         .post(`${url}/login`, values, {
           headers: {
@@ -49,7 +48,7 @@ export default function Login(): JSX.Element {
           if (response.status === 201) {
             console.log("Successfully logged in");
             localStorage.setItem("token", response.data.token);
-            localStorage.setItem("username", response.data.username)
+            localStorage.setItem("username", response.data.username);
             router.push("/home");
           }
         })

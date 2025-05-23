@@ -9,22 +9,21 @@ export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const token = localStorage.getItem("token");
   useEffect(() => {
-    const controller = new AbortController();
-    axios
-      .get(`${url}/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        signal: controller.signal,
-      })
-      .then((response) => setUserData(response.data))
-      .catch((err) => console.error(err))
-      .finally(() => setIsLoading(false));
-    return () => {
-      controller.abort();
-    };
+    const token = localStorage.getItem("token");
+    try {
+      axios
+        .get(`${url}/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => setUserData(response.data));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
   if (isLoading) {
     return <p>Loading...</p>;

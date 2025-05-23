@@ -1,11 +1,53 @@
 "use client";
-import { PostData, UserData } from "@/app/utils";
+import { PostData, UserData, PostComponentProps } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
+
+export const PostComponent: React.FC<PostComponentProps> = ({
+  user,
+  postData,
+  optionsClicked,
+  setOptionsClicked,
+}) => {
+  return (
+    <div>
+      {postData.length !== 0 && user && (
+        <>
+          {postData.map((post: PostData) => (
+            <div>
+              <div>
+                <span>{`${user.name} ${user.surname}`}</span>
+                <span>@{user.username}</span>
+                <span>{post.createdOn.getHours()}h</span>
+                <button
+                  onClick={() =>
+                    setOptionsClicked((previous: boolean) => !previous)
+                  }
+                >
+                  Options
+                </button>
+                {optionsClicked && (
+                  <>
+                    <button>Delete</button>
+                    <button>Edit</button>
+                  </>
+                )}
+              </div>
+              <div>
+                <button>Like</button>
+                <button>Comment</button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+};
 
 export function CreatePost() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -107,102 +149,79 @@ export function GetPosts({ url }: { url: string }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const pathname = usePathname().replace("/", "");
   const token = localStorage.getItem("token");
   useEffect(() => {
-    axios
-      .get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        if (response.data.posts) {
-          setPostData(response.data.posts);
-        }
-        setUser(response.data.user);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setIsLoading(false));
-  }, [pathname]);
+    try {
+      axios
+        .get(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          if (response.data.posts) {
+            setPostData(response.data.posts);
+          }
+          if (response.data.user) {
+            setUser(response.data.user);
+          }
+        });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [url]);
   if (isLoading) {
     return <></>;
   }
   return (
-    <div>
-      {postData.length !== 0 && user && (
-        <>
-          {postData.map((post: PostData) => (
-            <div>
-              <div>
-                <span>{`${user.name} ${user.surname}`}</span>
-                <span>@{user.username}</span>
-                <span>{post.createdOn.getHours()}h</span>
-                <button
-                  onClick={() =>
-                    setOptionsClicked((previous: boolean) => !previous)
-                  }
-                >
-                  Options
-                </button>
-                {optionsClicked && (
-                  <>
-                    <button>Delete</button>
-                    <button>Edit</button>
-                  </>
-                )}
-              </div>
-              <div>
-                <button>Like</button>
-                <button>Comment</button>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
+    <>
+      <PostComponent
+        user={user}
+        postData={postData}
+        optionsClicked={optionsClicked}
+        setOptionsClicked={setOptionsClicked}
+      />
       {postData.length === 0 && (
         <>
           <h2>No posts were found</h2>
         </>
       )}
-    </div>
+    </>
   );
 }
 export function GetSinglePost() {
   const url = "http://localhost:5000";
   const [postData, setPostData] = useState<PostData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [moreClicked, setMoreClicked] = useState<boolean>(false);
+  const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const pathname = usePathname();
   const postId = pathname.split("/")[-1];
   useEffect(() => {
-    axios
-      .get(`${url}/posts/${postId}`)
-      .then((response) => {
+    try {
+      axios.get(`${url}/posts/${postId}`).then((response) => {
         setPostData(response.data.post);
         setUserData(response.data.user);
-      })
-      .catch((err) => console.error(err));
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [postId]);
+  if (isLoading) {
+    <p>Loading...</p>;
+  }
   if (postData && userData) {
     return (
-      <>
-        <header>
-          <Link href={`/${userData.username}`}>Back</Link>
-          <h4>Post</h4>
-        </header>
-        <nav>
-          {/* <Image></Image> */}
-          <div>
-            <span>
-              {userData.name} {userData.surname}
-            </span>
-            <span>@{userData.username}</span>
-          </div>
-          <button>More</button>
-          {/* {moreClicked && } */}
-        </nav>
-      </>
+      <PostComponent
+        user={userData}
+        postData={[postData]}
+        optionsClicked={optionsClicked}
+        setOptionsClicked={setOptionsClicked}
+      />
     );
   }
 }
@@ -210,14 +229,20 @@ export function UpdatePost() {
   const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const [postData, setPostData] = useState<PostData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const pathname = usePathname();
   useEffect(() => {
-    axios
-      .get(`${url}/${pathname}`)
-      .then((response) => setPostData(response.data))
-      .catch((err) => console.error(err));
+    try {
+      axios
+        .get(`${url}/${pathname}`)
+        .then((response) => setPostData(response.data));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
-  if (!postData) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
   const updateForm = useFormik({

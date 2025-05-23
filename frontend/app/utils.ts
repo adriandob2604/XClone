@@ -1,3 +1,5 @@
+import React from "react";
+
 export type DateInfo = {
   months: string[];
   days: Record<string, number[]>;
@@ -56,6 +58,17 @@ export type Notification = {
   id: string
   notification: string
   createdOn: Date
+}
+export type PostComponentProps = {
+  user: UserData | null;
+  postData: PostData[]
+  optionsClicked: boolean;
+  setOptionsClicked: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export type FollowUserProps = {
+  users: UserData[]
+  isFollowing: boolean
+  setIsFollowing: React.Dispatch<React.SetStateAction<boolean>>
 }
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
