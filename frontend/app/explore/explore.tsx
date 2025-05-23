@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import WhoToFollow from "../components/whoToFollow";
+// import WhoToFollow from "../components/whoToFollow";
 export default function Explore() {
   const pathname = usePathname();
   return (
@@ -16,9 +16,7 @@ export default function Explore() {
         <Link href={`${pathname}/sports`}>Sports</Link>
         <Link href={`${pathname}/entertainment`}>Entertainment</Link>
       </nav>
-      <aside>
-        <WhoToFollow />
-      </aside>
+      <aside>{/* <WhoToFollow /> */}</aside>
       <main>
         <div>
           <h3>Today's News</h3>

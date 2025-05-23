@@ -1,95 +1,69 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FollowUserProps, UserData } from "../utils";
 import axios from "axios";
-export const FollowUser: React.FC<FollowUserProps> = ({
-  users,
-  isFollowing,
-  setIsFollowing,
-}) => {
-  return (
-    <>
-      {users.map((user: UserData, index: number) => (
-        <div key={`${user.id}-${index}`}>
-          {/* <Image></Image> */}
-          <div>
-            <span>
-              {user.name} {user.surname}
-            </span>
-            <span>@{user.username}</span>
-          </div>
-          {!isFollowing && (
-            <button
-              onClick={() =>
-                setIsFollowing((previous: boolean | null) => !previous)
-              }
-            >
-              Follow
-            </button>
-          )}
-          {isFollowing && (
-            <button
-              onClick={() =>
-                setIsFollowing((previous: boolean | null) => !previous)
-              }
-            >
-              Following
-            </button>
-          )}
-        </div>
-      ))}
-    </>
-  );
-};
-export default function WhoToFollow() {
+export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
   const url = "http://localhost:5000";
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const token = localStorage.getItem("token");
-
-  useEffect(() => {
+  const [isFollowing, setIsFollowing] = useState<boolean[]>([]);
+  const follow = (user: UserData, index: number) => {
     axios
-      .get(`${url}/to_follow`, {
+      .post(
+        `${url}/follow`,
+        {
+          id: user.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        if (response.status === 201) {
+          setIsFollowing(
+            (previous: boolean[]) => ((previous[index] = true), [...previous])
+          );
+        }
+      })
+      .catch((err) => console.error(err));
+  };
+  const unfollow = (user: UserData, index: number) => {
+    axios
+      .delete(`${url}/unfollow/${user.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => setUsers(response.data));
-  }, []);
-  useEffect(() => {
-    if (isFollowing) {
-      axios
-        .post(`${url}/followers`, followUser, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => console.log(response.status))
-        .catch((err) => console.error(err));
-    }
-    if (!isFollowing && followUser) {
-      axios
-        .delete(`${url}/followers/${followUser}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => console.log(response.status))
-        .catch((err) => console.error(err));
-    }
-  }, [isFollowing]);
-
+      .then((response) => {
+        if (response.status === 200) {
+          setIsFollowing(
+            (previous: boolean[]) => ((previous[index] = false), [...previous])
+          );
+        }
+      })
+      .catch((err) => console.error(err));
+  };
   if (users.length > 0) {
     return (
-      <FollowUser
-        users={users}
-        isFollowing={isFollowing}
-        setIsFollowing={setIsFollowing}
-      />
+      <>
+        {users.map((user: UserData, index: number) => (
+          <div key={`${user.id}-${index}`}>
+            {/* <Image></Image> */}
+            <div>
+              <span>
+                {user.name} {user.surname}
+              </span>
+              <span>@{user.username}</span>
+            </div>
+            {!isFollowing[index] && (
+              <button onClick={() => follow(user, index)}>Follow</button>
+            )}
+            {isFollowing[index] && (
+              <button onClick={() => unfollow(user, index)}>Following</button>
+            )}
+          </div>
+        ))}
+      </>
     );
   }
-  return (
-    <div>
-      <p>No users to follow!</p>
-    </div>
-  );
-}
+};

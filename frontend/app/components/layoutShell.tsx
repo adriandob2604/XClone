@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { LeftSideBar } from "@/app/home/home";
-import WhoToFollow from "@/app/components/whoToFollow";
+// import WhoToFollow from "@/app/components/whoToFollow";
 import Trending from "@/app/components/trending";
 import Searchbar from "../search/searchbar";
 
@@ -40,7 +40,7 @@ export default function LayoutShell({
           showSearchBar &&
           pathname !== "/explore" &&
           showHome && <Searchbar />}
-        {!isHomePage && showWhoToFollow && <WhoToFollow />}
+        {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
         {!isHomePage && showTrending && <Trending />}
       </aside>
       <div>{children}</div>

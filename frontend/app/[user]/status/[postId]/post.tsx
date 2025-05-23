@@ -8,41 +8,74 @@ import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 export const PostComponent: React.FC<PostComponentProps> = ({
-  user,
+  users,
   postData,
-  optionsClicked,
-  setOptionsClicked,
 }) => {
+  const url = "http://localhost:5000";
+  const token = localStorage.getItem("token");
+  const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
+  const [isOwn, setIsOwn] = useState<boolean>(false);
+  const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
+  const deletePost = async (postId: string, index: number) => {
+    try {
+      const response = await axios.delete(`${url}/posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setIsOwn(response.data.isOwn);
+      if (response.status === 200) {
+        setPostDeleted(
+          (previous: boolean[]) => ((previous[index] = true), [...previous])
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div>
-      {postData.length !== 0 && user && (
+      {postData.length !== 0 && users && (
         <>
-          {postData.map((post: PostData) => (
-            <div>
-              <div>
-                <span>{`${user.name} ${user.surname}`}</span>
-                <span>@{user.username}</span>
-                <span>{post.createdOn.getHours()}h</span>
-                <button
-                  onClick={() =>
-                    setOptionsClicked((previous: boolean) => !previous)
-                  }
-                >
-                  Options
-                </button>
-                {optionsClicked && (
-                  <>
-                    <button>Delete</button>
-                    <button>Edit</button>
-                  </>
+          {postData.map((post: PostData, index: number) => {
+            const user = users.find((u: UserData) => u.id === post.userId);
+
+            return (
+              <>
+                {!postDeleted[index] && (
+                  <div key={post.id}>
+                    <div>
+                      <span>{`${user?.name} ${user?.surname}`}</span>
+                      <span>@{user?.username}</span>
+                      <span>{post.createdOn.getHours()}h</span>
+                      <button
+                        onClick={() =>
+                          setOptionsClicked(
+                            (previous: boolean[]) => (
+                              (previous[index] = true), [...previous]
+                            )
+                          )
+                        }
+                      >
+                        Options
+                      </button>
+                      {isOwn && optionsClicked[index] && (
+                        <>
+                          <button onClick={() => deletePost(post.id, index)}>
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      <button>Like</button>
+                      <button>Comment</button>
+                    </div>
+                  </div>
                 )}
-              </div>
-              <div>
-                <button>Like</button>
-                <button>Comment</button>
-              </div>
-            </div>
-          ))}
+              </>
+            );
+          })}
         </>
       )}
     </div>
@@ -146,8 +179,7 @@ export function CreatePost() {
 
 export function GetPosts({ url }: { url: string }) {
   const [postData, setPostData] = useState<PostData[]>([]);
-  const [user, setUser] = useState<UserData | null>(null);
-  const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
+  const [user, setUser] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const token = localStorage.getItem("token");
   useEffect(() => {
@@ -177,12 +209,7 @@ export function GetPosts({ url }: { url: string }) {
   }
   return (
     <>
-      <PostComponent
-        user={user}
-        postData={postData}
-        optionsClicked={optionsClicked}
-        setOptionsClicked={setOptionsClicked}
-      />
+      <PostComponent users={user} postData={postData} />
       {postData.length === 0 && (
         <>
           <h2>No posts were found</h2>
@@ -195,7 +222,6 @@ export function GetSinglePost() {
   const url = "http://localhost:5000";
   const [postData, setPostData] = useState<PostData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [optionsClicked, setOptionsClicked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const pathname = usePathname();
   const postId = pathname.split("/")[-1];
@@ -215,66 +241,6 @@ export function GetSinglePost() {
     <p>Loading...</p>;
   }
   if (postData && userData) {
-    return (
-      <PostComponent
-        user={userData}
-        postData={[postData]}
-        optionsClicked={optionsClicked}
-        setOptionsClicked={setOptionsClicked}
-      />
-    );
+    return <PostComponent users={[userData]} postData={[postData]} />;
   }
 }
-export function UpdatePost() {
-  const url = "http://localhost:5000";
-  const token = localStorage.getItem("token");
-  const [postData, setPostData] = useState<PostData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const pathname = usePathname();
-  useEffect(() => {
-    try {
-      axios
-        .get(`${url}/${pathname}`)
-        .then((response) => setPostData(response.data));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  const updateForm = useFormik({
-    initialValues: {
-      text: postData?.text,
-      file: postData?.file,
-    },
-    validationSchema: Yup.object({
-      text: Yup.string().min(1).required("Required"),
-      file: Yup.mixed(),
-    }),
-    onSubmit: (values) => {
-      axios
-        .put(
-          `${url}/${pathname}`,
-          {
-            text: values.text,
-            file: values.file,
-            modifiedAt: Date.now(),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) =>
-          console.log("Post succesfully updated", response.data)
-        )
-        .catch((err) => console.error(err));
-    },
-  });
-  return <></>;
-}
-export function DeletePost() {}

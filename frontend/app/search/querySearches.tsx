@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Searchbar from "./searchbar";
 import axios from "axios";
 import { PostData, UserData } from "../utils";
+import { FollowUser } from "../components/whoToFollow";
+import { GetPosts, PostComponent } from "../[user]/status/[postId]/post";
 
 export default function QuerySearches() {
   const url = "http://localhost:5000";
@@ -55,13 +57,6 @@ export default function QuerySearches() {
           <button>Back</button>
           <Searchbar />
           <button>Options</button>
-          {inputClicked && (
-            <>
-              <nav>Search for "{searchQuery}"</nav>
-              {/* TODO MAP FOUND USERS */}
-              <Link href={`/${searchQuery}`}>Go to @{searchQuery}</Link>
-            </>
-          )}
         </div>
         <div>Top</div>
       </nav>
@@ -74,23 +69,18 @@ export default function QuerySearches() {
         )}
         {userData.length !== 0 && (
           <>
-            {/* <h2>People</h2> */}
-            <div>
-              <h2>People</h2>
-              {userData.map((user: UserData) => (
-                <div key={`${user.id}-${user.username}`}>
-                  {/* <Image></Image> */}
-                  <div>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h2>People</h2>
+            <FollowUser users={userData} />
           </>
         )}
-        <div>{postData.length !== 0 && <>{/* {postData.map} */}</>}</div>
+        <div>
+          {postData.length !== 0 && (
+            <>
+              <h2>Posts</h2>
+              <PostComponent users={userData} postData={postData} />
+            </>
+          )}
+        </div>
       </main>
     </>
   );
