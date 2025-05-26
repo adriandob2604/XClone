@@ -87,6 +87,32 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"user": normalUser, "isOwn": false})
 	}
 }
+func GetAllUsers(c *gin.Context) {
+	var users []UserData
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var foundUser UserData
+		err := cursor.Decode(&foundUser)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			return
+		}
+		users = append(users, foundUser)
+	}
+	c.JSON(http.StatusOK, users)
+}
 func Me(c *gin.Context) {
 	var foundUser UserData
 	decodedId, exists := c.Get("userId")

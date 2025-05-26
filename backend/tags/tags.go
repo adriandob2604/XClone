@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Tag struct {
@@ -17,9 +18,12 @@ type Tag struct {
 
 func TrendingTags(c *gin.Context) {
 	var tags []Tag
+	var limit int64 = 5
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("tags")
-	cursor, err := collection.Find(ctx, bson.M{})
+	findOptions := options.Find()
+	findOptions.SetLimit(limit)
+	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	}
