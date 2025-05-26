@@ -1,13 +1,15 @@
 "use client";
-import { socket } from "@/app/components/socket";
 import { useEffect, useState } from "react";
 import { Chat } from "../utils";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 export default function Messages() {
   const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const router = useRouter();
+  const pathname = usePathname();
+  console.log(pathname);
   const [chats, setChats] = useState<Chat[]>([]);
   useEffect(() => {
     axios
@@ -38,6 +40,16 @@ export default function Messages() {
             </div>
           ))}
         </>
+      )}
+      {chats.length === 0 && (
+        <div>
+          <h2>Welcome to your inbox!</h2>
+          <p>
+            Drop a line, share posts and more with private conversations between
+            you and others on X.
+          </p>
+          <Link href={`${pathname}/compose`}>Write a message</Link>
+        </div>
       )}
     </main>
   );

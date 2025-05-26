@@ -35,8 +35,8 @@ export type DraftData = {
   scheduledPosts: PostData[];
 };
 export type TrendingData = {
-  title: string
-  postCount: number
+  tag: string
+  posts: PostData[]
 }
 export type SearchItem = {
   id: string;
@@ -65,6 +65,10 @@ export type PostComponentProps = {
 }
 export type FollowUserProps = {
   users: UserData[]
+}
+export type TodaysNews = {
+  title:string
+  postCount: number
 }
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {

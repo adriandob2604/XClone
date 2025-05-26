@@ -9,6 +9,7 @@ export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [profileClicked, setProfileClicked] = useState<boolean>(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
     try {
@@ -49,14 +50,6 @@ export function LeftSideBar(): JSX.Element {
             <Link href="/messages">Messages</Link>
           </div>
           <div className="section-element">
-            {/* <Image alt="bookmarks" src="/" /> */}
-            <Link href="/bookmarks">Bookmarks</Link>
-          </div>
-          <div className="section-element">
-            {/* <Image alt="communities" src="/" /> */}
-            <Link href="/communities">Communities</Link>
-          </div>
-          <div className="section-element">
             {/* <Image alt="profile" src="/" /> */}
             <Link href={`/${userData?.username}`}>Profile</Link>
           </div>
@@ -76,12 +69,22 @@ export function LeftSideBar(): JSX.Element {
         {userData && (
           <div className="section-profile">
             {/* <Image alt="profile-pic" src="/" /> */}
-            <div>
+            <div
+              onClick={() => setProfileClicked(true)}
+              onBlur={() => setProfileClicked(false)}
+              role="button"
+              tabIndex={0}
+            >
               <h4>
                 {userData?.name} {userData?.surname}
               </h4>
               <p>@{userData?.username}</p>
             </div>
+            {profileClicked && (
+              <div>
+                <button>Log out @{userData.username}</button>
+              </div>
+            )}
             {/* <Image alt="spread" src="/" /> */}
           </div>
         )}

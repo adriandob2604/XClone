@@ -16,7 +16,8 @@ export default function Notifications() {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => setNotifications(response.data));
+      .then((response) => setNotifications(response.data))
+      .catch((err) => console.error(err));
   }, [token]);
   return (
     <>
