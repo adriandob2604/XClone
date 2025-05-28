@@ -56,9 +56,7 @@ export default function QuerySearches() {
         <div>
           <button>Back</button>
           <Searchbar />
-          <button>Options</button>
         </div>
-        <div>Top</div>
       </nav>
       <main>
         {userData.length === 0 && postData.length === 0 && (

@@ -1,3 +1,7 @@
-export default function MessagesComposePage() {
-  return <h1></h1>;
+export default function MessagesComposeLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <main>{children}</main>;
 }

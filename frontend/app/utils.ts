@@ -47,7 +47,9 @@ export type History = {
   searches: SearchItem[]
 }
 export type Message = {
+  id: string
   message: string
+  userId: string,
   createdOn: Date
 }
 export type Chat = {
@@ -70,6 +72,7 @@ export type TodaysNews = {
   title:string
   postCount: number
 }
+export const url = "http://localhost:5000"
 export function RegisterDateInfo(year: number): DateInfo {
   const isLeapYear = (): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;

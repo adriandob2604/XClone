@@ -3,9 +3,8 @@ import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { CreatePost, GetPosts } from "../[user]/status/[postId]/post";
-import { UserData } from "../utils";
+import { UserData, url } from "../utils";
 export function LeftSideBar(): JSX.Element {
-  const url = "http://localhost:5000";
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);

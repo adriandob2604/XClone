@@ -4,6 +4,7 @@ import { LeftSideBar } from "@/app/home/home";
 // import WhoToFollow from "@/app/components/whoToFollow";
 import Trending from "@/app/components/trending";
 import Searchbar from "../search/searchbar";
+import { KeycloakProvider } from "@/app/keycloakprovider";
 
 export default function LayoutShell({
   children,
@@ -28,22 +29,24 @@ export default function LayoutShell({
   const showSearchBar = !["/messages", "/search"].includes(pathname);
   const isHomePage = pathname === "/";
   return (
-    <main className="root-container">
-      <section>{!isHomePage && showHome && <LeftSideBar />}</section>
-      <nav>
-        {!isHomePage && showSearchBar && pathname === "/explore" && (
-          <Searchbar />
-        )}
-      </nav>
-      <aside>
-        {!isHomePage &&
-          showSearchBar &&
-          pathname !== "/explore" &&
-          showHome && <Searchbar />}
-        {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
-        {!isHomePage && showTrending && <Trending />}
-      </aside>
-      <div>{children}</div>
-    </main>
+    <KeycloakProvider>
+      <main className="root-container">
+        <section>{!isHomePage && showHome && <LeftSideBar />}</section>
+        <nav>
+          {!isHomePage && showSearchBar && pathname === "/explore" && (
+            <Searchbar />
+          )}
+        </nav>
+        <aside>
+          {!isHomePage &&
+            showSearchBar &&
+            pathname !== "/explore" &&
+            showHome && <Searchbar />}
+          {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
+          {!isHomePage && showTrending && <Trending />}
+        </aside>
+        <div>{children}</div>
+      </main>
+    </KeycloakProvider>
   );
 }

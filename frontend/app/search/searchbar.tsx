@@ -14,7 +14,6 @@ export default function Searchbar() {
   const token = localStorage.getItem("token");
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
-
   const refetchHistory = async () => {
     try {
       const response = await axios.get(`${url}/history`, {
@@ -106,15 +105,18 @@ export default function Searchbar() {
               Clear all
             </button>
           </header>
-
-          {history.map((search: SearchItem) => (
-            <div key={search.id}>
-              <div>{search.input}</div>
-              <button type="button" onClick={() => handleDelete(search)}>
-                x
-              </button>
-            </div>
-          ))}
+          <div>
+            {history.map((search: SearchItem) => (
+              <div key={search.id}>
+                <>
+                  <div>{search.input}</div>
+                  <button type="button" onClick={() => handleDelete(search)}>
+                    x
+                  </button>
+                </>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </form>

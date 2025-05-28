@@ -1,11 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Chat } from "../utils";
+import { Chat, url } from "../utils";
 import axios from "axios";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 export default function Messages() {
-  const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const router = useRouter();
   const pathname = usePathname();

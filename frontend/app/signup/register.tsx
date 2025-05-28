@@ -66,10 +66,9 @@ export default function Register(): JSX.Element {
           ...registerValues,
         });
         console.log(response.status);
-        router.push("/home");
+        router.push("/login");
       } catch {
         console.error("Error while registering");
-        console.log(registerValues);
       }
     },
   });

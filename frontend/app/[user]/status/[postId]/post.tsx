@@ -1,5 +1,5 @@
 "use client";
-import { PostData, UserData, PostComponentProps } from "@/app/utils";
+import { PostData, UserData, PostComponentProps, url } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
@@ -11,7 +11,6 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   users,
   postData,
 }) => {
-  const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
   const [isOwn, setIsOwn] = useState<boolean[]>([]);

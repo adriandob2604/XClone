@@ -1,13 +1,17 @@
+import { UserData, Message, url } from "@/app/utils";
 import axios from "axios";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+export const { io } = require("socket.io-client");
+
 export default function Chat() {
   const pathname = usePathname();
   const token = localStorage.getItem("token");
-  const url = "http://localhost:5000";
+  const socket = io(url);
   const chatId = pathname.split("/")[1];
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [messagedUser, setMessagedUser] = useState<UserData | null>(null);
   useEffect(() => {
     axios
       .get(`${url}/chats/${chatId}`, {
@@ -15,12 +19,31 @@ export default function Chat() {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => setMessages(response.data))
+      .then((response) => {
+        setMessages(response.data.messages);
+        setMessagedUser(response.data.user);
+      })
       .catch((err) => console.error(err));
   }, [chatId]);
   return (
-    <>
-      <nav></nav>
-    </>
+    <aside>
+      <nav>
+        {/* <Image></Image> */}
+        <div>{messagedUser?.username}</div>
+      </nav>
+      <main>
+        {messages.map((message: Message) => (
+          <div key={message.id}>
+            <div>{message.message}</div>
+            <p>{message.createdOn.getTime()}</p>
+          </div>
+        ))}
+      </main>
+      <footer>
+        <input type="text" />
+        <input type="text" placeholder="Write a message" />
+        <button></button>
+      </footer>
+    </aside>
   );
 }

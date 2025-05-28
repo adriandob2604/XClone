@@ -3,13 +3,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { TrendingData, UserData } from "../utils";
+import { TrendingData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
 import { useRouter } from "next/navigation";
 export default function Explore() {
   const pathname = usePathname();
   const token = localStorage.getItem("token");
-  const url = "http://localhost:5000";
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
   const [trending, SetTrending] = useState<TrendingData[]>([]);

@@ -1,3 +1,10 @@
+import CreateMessage from "./createMessage";
+import MessagesComposeLayout from "./layout";
+
 export default function MessagesComposePage() {
-  return <h1></h1>;
+  return (
+    <MessagesComposeLayout>
+      <CreateMessage />
+    </MessagesComposeLayout>
+  );
 }

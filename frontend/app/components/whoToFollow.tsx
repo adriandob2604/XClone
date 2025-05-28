@@ -1,33 +1,34 @@
 import { useState } from "react";
-import { FollowUserProps, UserData } from "../utils";
+import { FollowUserProps, UserData, url } from "../utils";
 import axios from "axios";
 export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
-  const url = "http://localhost:5000";
   const token = localStorage.getItem("token");
   const [isFollowing, setIsFollowing] = useState<boolean[]>([]);
-  const follow = (user: UserData, index: number) => {
-    axios
-      .post(
-        `${url}/follow`,
-        {
-          id: user.id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+  const follow = async (user: UserData, index: number) => {
+    if (user) {
+      axios
+        .post(
+          `${url}/follow`,
+          {
+            id: user.id,
           },
-        }
-      )
-      .then((response) => {
-        if (response.status === 201) {
-          setIsFollowing(
-            (previous: boolean[]) => ((previous[index] = true), [...previous])
-          );
-        }
-      })
-      .catch((err) => console.error(err));
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((response) => {
+          if (response.status === 201) {
+            setIsFollowing(
+              (previous: boolean[]) => ((previous[index] = true), [...previous])
+            );
+          }
+        })
+        .catch((err) => console.error(err));
+    }
   };
-  const unfollow = (user: UserData, index: number) => {
+  const unfollow = async (user: UserData, index: number) => {
     axios
       .delete(`${url}/unfollow/${user.id}`, {
         headers: {

@@ -2,12 +2,11 @@
 import axios from "axios";
 import { JSX, useEffect, useState } from "react";
 import Link from "next/link";
-import { UserData, PostData } from "../utils";
+import { UserData, PostData, url } from "../utils";
 import { usePathname } from "next/navigation";
 import { GetPosts } from "./status/[postId]/post";
 
 export default function Profile() {
-  const url = "http://localhost:5000";
   const [userData, setUserData] = useState<UserData | null>(null);
   const pathname = usePathname().slice(1);
   const [isOwn, setIsOwn] = useState<boolean>(false);
