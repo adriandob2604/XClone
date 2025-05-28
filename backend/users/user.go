@@ -89,14 +89,14 @@ func GetUser(c *gin.Context) {
 }
 func GetAllUsers(c *gin.Context) {
 	var users []UserData
-	_, exists := c.Get("userId")
+	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	cursor, err := collection.Find(ctx, bson.M{})
+	cursor, err := collection.Find(ctx, bson.M{"_id": bson.M{"$ne": decodedId.(primitive.ObjectID)}})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

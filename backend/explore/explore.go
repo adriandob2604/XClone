@@ -23,7 +23,7 @@ func GetExploreSearches(c *gin.Context) {
 	ctx := c.Request.Context()
 	usersCollection := db.Database.Collection("users")
 	postsCollection := db.Database.Collection("posts")
-	userCursor, err := usersCollection.Find(ctx, bson.M{"username": bson.M{"$regex": query, "$options": "i"}, "_id": bson.M{"$ne": decodedId}})
+	userCursor, err := usersCollection.Find(ctx, bson.M{"username": bson.M{"$regex": "^" + query, "$options": "i"}, "_id": bson.M{"$ne": decodedId}})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -38,7 +38,7 @@ func GetExploreSearches(c *gin.Context) {
 		}
 		foundUsers = append(foundUsers, foundUser)
 	}
-	postCursor, err := postsCollection.Find(ctx, bson.M{"text": bson.M{"$regex": query, "$options": "i"}})
+	postCursor, err := postsCollection.Find(ctx, bson.M{"text": bson.M{"$regex": "^" + query, "$options": "i"}})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

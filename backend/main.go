@@ -46,6 +46,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(CORS()))
 	router.POST("/users", users.CreateUser)
+	router.GET("/users", authorization.AuthMiddleware(), users.GetAllUsers)
 	router.GET("/users/:username", authorization.AuthMiddleware(), users.GetUser)
 	router.GET("/me", authorization.AuthMiddleware(), users.Me)
 	router.PUT("/users", authorization.AuthMiddleware(), users.UpdateUser)

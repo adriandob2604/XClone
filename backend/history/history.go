@@ -81,9 +81,14 @@ func DeleteHistoryItem(c *gin.Context) {
 	}
 
 	itemId := c.Param("id")
+	itemObjectID, err := primitive.ObjectIDFromHex(itemId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID"})
+		return
+	}
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("history")
-	_, err := collection.UpdateOne(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"searches": bson.M{"_id": itemId}}})
+	_, err = collection.UpdateOne(ctx, bson.M{"_id": decodedId}, bson.M{"$pull": bson.M{"searches": bson.M{"_id": itemObjectID}}})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
