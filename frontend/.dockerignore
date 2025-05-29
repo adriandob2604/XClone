@@ -1,6 +1,28 @@
 node_modules
 npm-debug.log
-.next
-Dockerfile
-.dockerignore
+yarn-debug.log
+yarn-error.log
+pnpm-lock.yaml
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+*.pid
+*.seed
+*.bak
+
 .env
+.env.* 
+
+.git
+.gitignore
+*.swp
+*.swo
+.vscode
+.idea
+
+docker-compose.override.yml

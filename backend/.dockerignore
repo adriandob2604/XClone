@@ -1,27 +1,15 @@
-# Node.js standard
-node_modules
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-pnpm-lock.yaml
-
-# OS-specific
 .DS_Store
 Thumbs.db
 
-# Logs
 *.log
 logs
 *.pid
 *.seed
 *.bak
 
-# Env files
 .env
-.env.*  # jeśli masz np. .env.dev, .env.prod itd.
-ssl_conf.env
+.env.* 
 
-# Git & Editor stuff
 .git
 .gitignore
 *.swp
@@ -29,11 +17,4 @@ ssl_conf.env
 .vscode
 .idea
 
-# Test & build files
-coverage
-jest
-*.test.js
-*.spec.js
-
-# Docker files if you build nested
 docker-compose.override.yml
