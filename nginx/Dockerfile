@@ -1,6 +1,10 @@
-FROM nginx:alpine as builder
+FROM nginx:alpine
+WORKDIR /nginx
+COPY . .
 RUN apk update && apk add --no-cache openssl
-RUN chmod +x ssl_script.sh
+
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY ssl_conf.env /etc/nginx/.env
-COPY ssl_script.sh /docker-entrypoint.d/ssl_script.sh
+COPY ssl_conf.env /etc/nginx/ssl_conf.env
+
+COPY ssl_script.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/ssl_script.sh

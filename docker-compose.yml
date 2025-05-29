@@ -1,37 +1,33 @@
-version: "3.8"
 services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
     ports:
       - "3000:3000"
     networks:
+      - frontend_network
       - project_network
-
+    depends_on:
+      - keycloak
+    restart: unless-stopped
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
-    depends_on:
-      - db
+    env_file:
+      - ./backend/.env
     ports:
       - "5000:5000"
     networks:
+      - backend_network
       - project_network
-  db:
-    container_name: db
-    image: mongo
-    volumes:
-      - mongo_data:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      - project_network
-
   cache:
     build:
       context: ./nginx
+      dockerfile: Dockerfile
     container_name: cache
     volumes:
       - nginx_cache:/var/cache/nginx
@@ -39,11 +35,38 @@ services:
       - "80:80"
     networks:
       - project_network
-
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    env_file:
+      - ./postgres/.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - project_network
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak
+    env_file:
+      - ./keycloak/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - frontend_network
+      - project_network
+    command:
+      - start-dev
 volumes:
-  mongo_data:
   nginx_cache:
-
+  pg_data:
 networks:
   project_network:
     name: project_network
+  frontend_network:
+    name: frontend_network
+  backend_network:
+    name: backend_network

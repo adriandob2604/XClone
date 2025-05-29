@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "./components/layoutShell";
-import KeycloakProvider from "@/app/keycloakprovider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
