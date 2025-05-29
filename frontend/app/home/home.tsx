@@ -1,21 +1,22 @@
 "use client";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { CreatePost, GetPosts } from "../[user]/status/[postId]/post";
 import { UserData, url } from "../utils";
+import { KeycloakContext } from "../keycloakprovider";
 export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileClicked, setProfileClicked] = useState<boolean>(false);
+  const keycloak = useContext(KeycloakContext);
   useEffect(() => {
-    const token = localStorage.getItem("token");
     try {
       axios
         .get(`${url}/me`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${keycloak.token}`,
           },
         })
         .then((response) => setUserData(response.data));

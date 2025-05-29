@@ -1,24 +1,25 @@
 "use client";
 import { useFormik } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import axios from "axios";
 import { SearchItem } from "../utils";
+import { KeycloakContext } from "../keycloakprovider";
 
 export default function Searchbar() {
   const url = "http://localhost:5000";
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
   const refetchHistory = async () => {
     try {
       const response = await axios.get(`${url}/history`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       });
       setHistory(response.data);
@@ -34,7 +35,7 @@ export default function Searchbar() {
   const handleDelete = async (item: SearchItem) => {
     try {
       await axios.delete(`${url}/history/${item.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${keycloak.token}` },
       });
       refetchHistory();
     } catch (err) {
@@ -45,7 +46,7 @@ export default function Searchbar() {
   const handleClearAll = async () => {
     try {
       await axios.delete(`${url}/history`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${keycloak.token}` },
       });
       refetchHistory();
     } catch (err) {
@@ -67,7 +68,7 @@ export default function Searchbar() {
           { ...values },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${keycloak.token}`,
             },
           }
         );

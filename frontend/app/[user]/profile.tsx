@@ -1,10 +1,11 @@
 "use client";
 import axios from "axios";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { UserData, PostData, url } from "../utils";
 import { usePathname } from "next/navigation";
 import { GetPosts } from "./status/[postId]/post";
+import { KeycloakContext } from "../keycloakprovider";
 
 export default function Profile() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -13,16 +14,16 @@ export default function Profile() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [postCount, setPostCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [profileResponse, postsResponse] = await Promise.all([
           axios.get(`${url}/users/${pathname}`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${keycloak.token}` },
           }),
           axios.get(`${url}/${pathname}/posts`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${keycloak.token}` },
           }),
         ]);
         if (profileResponse.status === 200 && postsResponse.status === 200) {

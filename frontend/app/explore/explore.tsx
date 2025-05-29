@@ -1,14 +1,15 @@
 "use client";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { TrendingData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
 import { useRouter } from "next/navigation";
+import { KeycloakContext } from "../keycloakprovider";
 export default function Explore() {
   const pathname = usePathname();
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
   const [trending, SetTrending] = useState<TrendingData[]>([]);
@@ -23,7 +24,7 @@ export default function Explore() {
     axios
       .get(`${url}/trending`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => {
@@ -38,7 +39,7 @@ export default function Explore() {
     axios
       .get(`${url}/to_follow`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => {

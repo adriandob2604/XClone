@@ -4,14 +4,15 @@ import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
+import { KeycloakContext } from "@/app/keycloakprovider";
 
 export const PostComponent: React.FC<PostComponentProps> = ({
   users,
   postData,
 }) => {
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
   const [isOwn, setIsOwn] = useState<boolean[]>([]);
   const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
@@ -19,7 +20,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
     try {
       const response = await axios.delete(`${url}/posts/${postId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       });
       // setIsOwn(response.data.isOwn);
@@ -82,15 +83,14 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 };
 
 export function CreatePost() {
+  const keycloak = useContext(KeycloakContext);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const token = localStorage.getItem("token");
-  const url = "http://localhost:5000";
   const FILE_SIZE = 160 * 1024;
   useEffect(() => {
     axios
       .get(`${url}/me`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => setUserData(response.data))
@@ -121,7 +121,7 @@ export function CreatePost() {
         const [postResponse, notificationResponse] = await Promise.all([
           axios.post(`${url}/posts`, formData, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${keycloak.token}`,
             },
           }),
           axios.post(
@@ -129,7 +129,7 @@ export function CreatePost() {
             { notification: notificationMessage },
             {
               headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${keycloak.token}`,
               },
             }
           ),
@@ -177,16 +177,16 @@ export function CreatePost() {
 }
 
 export function GetPosts({ url }: { url: string }) {
+  const keycloak = useContext(KeycloakContext);
   const [postData, setPostData] = useState<PostData[]>([]);
   const [user, setUser] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const token = localStorage.getItem("token");
   useEffect(() => {
     try {
       axios
         .get(url, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${keycloak.token}`,
           },
         })
         .then((response) => {
@@ -218,7 +218,7 @@ export function GetPosts({ url }: { url: string }) {
   );
 }
 export function GetSinglePost() {
-  const url = "http://localhost:5000";
+  const keycloak = useContext(KeycloakContext);
   const [postData, setPostData] = useState<PostData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -226,10 +226,16 @@ export function GetSinglePost() {
   const postId = pathname.split("/")[-1];
   useEffect(() => {
     try {
-      axios.get(`${url}/posts/${postId}`).then((response) => {
-        setPostData(response.data.post);
-        setUserData(response.data.user);
-      });
+      axios
+        .get(`${url}/posts/${postId}`, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        })
+        .then((response) => {
+          setPostData(response.data.post);
+          setUserData(response.data.user);
+        });
     } catch (err) {
       console.error(err);
     } finally {

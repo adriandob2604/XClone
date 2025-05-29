@@ -1,12 +1,13 @@
 "use client";
+import { KeycloakContext } from "@/app/keycloakprovider";
 import { UserData, url } from "@/app/utils";
 import axios from "axios";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 export default function CreateMessage() {
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [users, setUsers] = useState<UserData[]>([]);
@@ -17,7 +18,7 @@ export default function CreateMessage() {
     axios
       .get(`${url}/users`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => {
@@ -56,7 +57,7 @@ export default function CreateMessage() {
           { text: values.text, userId: values.user.id },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${keycloak.token}`,
             },
           }
         );

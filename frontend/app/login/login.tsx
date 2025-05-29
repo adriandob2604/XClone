@@ -18,7 +18,6 @@ export default function Login(): JSX.Element {
       })
       .then((authenticated) => {
         if (authenticated) {
-          localStorage.setItem("token", JSON.stringify(keycloak.token));
           router.push("/home");
         }
       });

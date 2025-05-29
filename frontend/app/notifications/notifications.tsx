@@ -2,23 +2,23 @@
 import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Notification } from "../utils";
+import { useContext, useEffect, useState } from "react";
+import { Notification, url } from "../utils";
+import { KeycloakContext } from "../keycloakprovider";
 export default function Notifications() {
   const pathname = usePathname();
-  const url = "http://localhost:5000";
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   useEffect(() => {
     axios
       .get(`${url}/notifications`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => setNotifications(response.data))
       .catch((err) => console.error(err));
-  }, [token]);
+  }, []);
   return (
     <>
       <header>

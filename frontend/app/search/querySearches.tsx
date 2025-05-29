@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Searchbar from "./searchbar";
 import axios from "axios";
-import { PostData, UserData } from "../utils";
+import { PostData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
 import { GetPosts, PostComponent } from "../[user]/status/[postId]/post";
+import { KeycloakContext } from "../keycloakprovider";
 
 export default function QuerySearches() {
-  const url = "http://localhost:5000";
   const searchparams = useSearchParams();
   const params = new URLSearchParams(searchparams.toString());
   const searchQuery = params.get("q");
@@ -19,14 +19,14 @@ export default function QuerySearches() {
   const [postData, setPostData] = useState<PostData[]>([]);
   const [noResults, setNoResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
 
   useEffect(() => {
     try {
       axios
         .get(`${url}/explore`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${keycloak.token}`,
           },
         })
         .then((response) => {

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { FollowUserProps, UserData, url } from "../utils";
+import { KeycloakContext } from "../keycloakprovider";
 import axios from "axios";
 export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const [isFollowing, setIsFollowing] = useState<boolean[]>([]);
   const follow = async (user: UserData, index: number) => {
     if (user) {
@@ -14,7 +15,7 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${keycloak.token}`,
             },
           }
         )
@@ -32,7 +33,7 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
     axios
       .delete(`${url}/unfollow/${user.id}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => {

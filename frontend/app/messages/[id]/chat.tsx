@@ -1,13 +1,14 @@
+import { KeycloakContext } from "@/app/keycloakprovider";
 import { UserData, Message, url } from "@/app/utils";
 import axios from "axios";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 export const { io } = require("socket.io-client");
 
 export default function Chat() {
   const pathname = usePathname();
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const socket = io(url);
   const chatId = pathname.split("/")[1];
   const [messages, setMessages] = useState<Message[]>([]);
@@ -16,7 +17,7 @@ export default function Chat() {
     axios
       .get(`${url}/chats/${chatId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => {

@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Chat, url } from "../utils";
 import axios from "axios";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { KeycloakContext } from "../keycloakprovider";
 export default function Messages() {
-  const token = localStorage.getItem("token");
+  const keycloak = useContext(KeycloakContext);
   const router = useRouter();
   const pathname = usePathname();
   console.log(pathname);
@@ -14,7 +15,7 @@ export default function Messages() {
     axios
       .get(`${url}/chats`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${keycloak.token}`,
         },
       })
       .then((response) => setChats(response.data))
