@@ -10,7 +10,7 @@ logs/
 
 .DS_Store
 Thumbs.db
-
+ssl_conf.env
 .env
 *.env
 *~
