@@ -1,21 +1,28 @@
 "use client";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { TrendingData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
-import { useRouter } from "next/navigation";
 import { KeycloakContext } from "../keycloakprovider";
 export default function Explore() {
   const pathname = usePathname();
-  const keycloak = useContext(KeycloakContext);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
   const [trending, SetTrending] = useState<TrendingData[]>([]);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const handleTrendingPosts = (tag: string) => {
     params.set("q", tag);
     router.push(`/search?${params.toString()}`);

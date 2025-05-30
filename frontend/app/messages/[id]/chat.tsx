@@ -2,17 +2,28 @@ import { KeycloakContext } from "@/app/keycloakprovider";
 import { UserData, Message, url } from "@/app/utils";
 import axios from "axios";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 
 export const { io } = require("socket.io-client");
 
 export default function Chat() {
   const pathname = usePathname();
-  const keycloak = useContext(KeycloakContext);
+
   const socket = io(url);
   const chatId = pathname.split("/")[1];
   const [messages, setMessages] = useState<Message[]>([]);
   const [messagedUser, setMessagedUser] = useState<UserData | null>(null);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     axios
       .get(`${url}/chats/${chatId}`, {

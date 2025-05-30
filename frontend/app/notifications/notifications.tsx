@@ -1,14 +1,23 @@
 "use client";
 import axios from "axios";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { Notification, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
 export default function Notifications() {
   const pathname = usePathname();
-  const keycloak = useContext(KeycloakContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     axios
       .get(`${url}/notifications`, {

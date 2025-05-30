@@ -6,6 +6,7 @@ import { UserData, PostData, url } from "../utils";
 import { usePathname } from "next/navigation";
 import { GetPosts } from "./status/[postId]/post";
 import { KeycloakContext } from "../keycloakprovider";
+import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -14,7 +15,16 @@ export default function Profile() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [postCount, setPostCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     const fetchData = async () => {
       try {

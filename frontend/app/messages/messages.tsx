@@ -6,11 +6,18 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { KeycloakContext } from "../keycloakprovider";
 export default function Messages() {
-  const keycloak = useContext(KeycloakContext);
-  const router = useRouter();
   const pathname = usePathname();
-  console.log(pathname);
   const [chats, setChats] = useState<Chat[]>([]);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     axios
       .get(`${url}/chats`, {

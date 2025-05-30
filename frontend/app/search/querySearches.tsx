@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import Searchbar from "./searchbar";
 import axios from "axios";
@@ -19,7 +18,16 @@ export default function QuerySearches() {
   const [postData, setPostData] = useState<PostData[]>([]);
   const [noResults, setNoResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
 
   useEffect(() => {
     try {

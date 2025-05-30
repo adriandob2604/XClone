@@ -1,32 +1,22 @@
 "use client";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { Formik, useFormik } from "formik";
 import keycloak from "../lib/keycloak";
 import * as Yup from "yup";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { url } from "@/app/utils";
+import { KeycloakContext } from "../keycloakprovider";
 
 export default function Login(): JSX.Element {
-  const url = "http://localhost:5000";
   const [clicked, setClicked] = useState<boolean>(false);
   const router = useRouter();
+  const { login } = useContext(KeycloakContext);
   const handleKeycloakLogin = () => {
-    keycloak
-      .init({
-        onLoad: "login-required",
-      })
-      .then((authenticated) => {
-        if (authenticated) {
-          router.push("/home");
-        }
-      });
+    login();
   };
-  const handleSocialLogin = () => {
-    keycloak.init({
-      onLoad: "login-required",
-    });
-  };
+
   const LoginForm = useFormik({
     initialValues: {
       username: "",
@@ -46,8 +36,6 @@ export default function Login(): JSX.Element {
         .then((response) => {
           if (response.status === 201) {
             console.log("Successfully logged in");
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("username", response.data.username);
             router.push("/home");
           }
         })

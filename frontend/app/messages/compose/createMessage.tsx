@@ -7,13 +7,21 @@ import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 export default function CreateMessage() {
-  const keycloak = useContext(KeycloakContext);
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     axios
       .get(`${url}/users`, {

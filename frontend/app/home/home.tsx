@@ -5,12 +5,22 @@ import axios from "axios";
 import { CreatePost, GetPosts } from "../[user]/status/[postId]/post";
 import { UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
+import { useRouter } from "next/navigation";
 export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileClicked, setProfileClicked] = useState<boolean>(false);
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, logout, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   useEffect(() => {
     try {
       axios
@@ -82,7 +92,7 @@ export function LeftSideBar(): JSX.Element {
             </div>
             {profileClicked && (
               <div>
-                <button>Log out @{userData.username}</button>
+                <button onClick={logout}>Log out @{userData.username}</button>
               </div>
             )}
             {/* <Image alt="spread" src="/" /> */}
@@ -93,7 +103,6 @@ export function LeftSideBar(): JSX.Element {
   );
 }
 export function HomeMainPage() {
-  const url = "http://localhost:5000";
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
   return (
     <>

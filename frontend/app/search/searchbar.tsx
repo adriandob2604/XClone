@@ -4,17 +4,24 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import axios from "axios";
-import { SearchItem } from "../utils";
+import { SearchItem, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
 
 export default function Searchbar() {
-  const url = "http://localhost:5000";
-  const router = useRouter();
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
-  const keycloak = useContext(KeycloakContext);
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const refetchHistory = async () => {
     try {
       const response = await axios.get(`${url}/history`, {

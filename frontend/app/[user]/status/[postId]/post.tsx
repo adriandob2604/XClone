@@ -7,12 +7,22 @@ import { usePathname } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { KeycloakContext } from "@/app/keycloakprovider";
+import { useRouter } from "next/navigation";
 
 export const PostComponent: React.FC<PostComponentProps> = ({
   users,
   postData,
 }) => {
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
   const [isOwn, setIsOwn] = useState<boolean[]>([]);
   const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
@@ -83,7 +93,16 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 };
 
 export function CreatePost() {
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const [userData, setUserData] = useState<UserData | null>(null);
   const FILE_SIZE = 160 * 1024;
   useEffect(() => {
@@ -177,7 +196,16 @@ export function CreatePost() {
 }
 
 export function GetPosts({ url }: { url: string }) {
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const [postData, setPostData] = useState<PostData[]>([]);
   const [user, setUser] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -218,7 +246,16 @@ export function GetPosts({ url }: { url: string }) {
   );
 }
 export function GetSinglePost() {
-  const keycloak = useContext(KeycloakContext);
+  const router = useRouter();
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated]);
+  if (!isAuthenticated) {
+    return <p>Not authenticated!</p>;
+  }
   const [postData, setPostData] = useState<PostData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);

@@ -2,7 +2,6 @@ package main
 
 import (
 	"backend/authorization"
-	"backend/aws"
 	"backend/chats"
 	"backend/db"
 	"backend/explore"
@@ -37,9 +36,9 @@ func init() {
 	if err := db.Connect(); err != nil {
 		log.Fatal("Couldn't connect to database")
 	}
-	if err := aws.ConnectAWS(); err != nil {
-		log.Fatal("Couldn't connect to aws")
-	}
+	// if err := supabase.ConnectToSupabase(); err != nil {
+	// 	log.Fatal("Couldn't connect to supabase")
+	// }
 }
 func main() {
 	gin.SetMode(gin.DebugMode)
