@@ -2,11 +2,15 @@ package posts
 
 import (
 	"backend/db"
+	"backend/supabase"
 	"backend/users"
+	"fmt"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/supabase-community/storage-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -46,23 +50,61 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	post.UserID = decodedId.(primitive.ObjectID)
-	post.CreatedOn = time.Now()
-	ctx := c.Request.Context()
-	collection := db.Database.Collection("posts")
-
-	if err := c.ShouldBindJSON(&post); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	_, err := collection.InsertOne(ctx, post)
+	postFile, err := c.FormFile("postFile")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	openedPostFile, err := postFile.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer openedPostFile.Close()
+
+	buf := make([]byte, 512)
+	_, err = openedPostFile.Read(buf)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot read file"})
+		return
+	}
+	contentType := http.DetectContentType(buf)
+
+	_, err = openedPostFile.Seek(0, io.SeekStart)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot reset file reader"})
+		return
+	}
+
+	post.UserID = decodedId.(primitive.ObjectID)
+	post.CreatedOn = time.Now()
+	post.Text = c.PostForm("text")
+	postFilePath := fmt.Sprintf("uploads/%s/%s", post.PostID.Hex(), postFile.Filename)
+
+	_, err = supabase.SupabaseClient.Storage.UploadFile("posts", postFilePath, openedPostFile, storage_go.FileOptions{
+		ContentType: &contentType,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	postUrl := supabase.SupabaseClient.Storage.GetPublicUrl("posts", postFilePath)
+	post.FileUrl = postUrl.SignedURL
+
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("posts")
+
+	_, err = collection.InsertOne(ctx, post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusCreated, post)
 }
+
 func GetPost(c *gin.Context) {
 	var foundPost Post
 	var foundUser users.UserData

@@ -5,7 +5,6 @@ go 1.24.2
 require (
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.1
-	github.com/joho/godotenv v1.5.1
 	github.com/supabase-community/supabase-go v0.0.4
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.38.0

@@ -4,14 +4,19 @@ import (
 	"backend/chats"
 	"backend/db"
 	"backend/password"
+	"backend/supabase"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
@@ -41,14 +46,15 @@ type UserUpdateData struct {
 	BirthDate   time.Time `json:"birthDate" `
 }
 type UserData struct {
-	BackgroundImage string     `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
-	ProfileImage    string     `json:"profileImageUrl" bson:"profileImageUrl"`
-	Name            string     `json:"name" bson:"name"`
-	Surname         string     `json:"surname" bson:"surname"`
-	Username        string     `json:"username" bson:"username"`
-	CreatedOn       time.Time  `json:"createdOn" bson:"createdOn"`
-	Followers       []Follower `json:"followers" bson:"followers"`
-	Following       []Follower `json:"following" bson:"following"`
+	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	BackgroundImage string             `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
+	ProfileImage    string             `json:"profileImageUrl" bson:"profileImageUrl"`
+	Name            string             `json:"name" bson:"name"`
+	Surname         string             `json:"surname" bson:"surname"`
+	Username        string             `json:"username" bson:"username"`
+	CreatedOn       time.Time          `json:"createdOn" bson:"createdOn"`
+	Followers       []Follower         `json:"followers" bson:"followers"`
+	Following       []Follower         `json:"following" bson:"following"`
 }
 type Follower struct {
 	UserID   primitive.ObjectID `bson:"userId"`
@@ -76,6 +82,7 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "User doesn't exist"})
 		return
 	}
+
 	if foundUser.Username == username {
 		c.JSON(http.StatusOK, gin.H{"user": foundUser, "isOwn": true})
 	} else {
@@ -133,6 +140,7 @@ func Me(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
+	keycloakUrl := "http://localhost:8080/auth/admin/realms/my-realm/users"
 	var newUser User
 	newUser.ID = primitive.NewObjectID()
 	if err := c.ShouldBindJSON(&newUser); err != nil {
@@ -147,15 +155,53 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	keycloakPayload := map[string]interface{}{
+		"username": newUser.Username,
+		"email":    newUser.Email,
+		"enabled":  true,
+		"credentials": []map[string]interface{}{
+			{
+				"type":      "password",
+				"value":     newUser.Password,
+				"temporary": false,
+			},
+		},
+	}
+	payloadBytes, _ := json.Marshal(keycloakPayload)
+	req, err := http.NewRequest("POST", keycloakUrl, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	adminToken := os.Getenv("KEYCLOAK_ADMIN_TOKEN")
+	req.Header.Set("Authorization", "Bearer "+adminToken)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		c.JSON(resp.StatusCode, gin.H{
+			"error":   "Keycloak error",
+			"details": string(body),
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "User created"})
 }
 
 func UpdateUser(c *gin.Context) {
-	var updatedUser User
 	var updateData UserUpdateData
-	var foundUser User
+	var foundUser UserData
 	ctx := c.Request.Context()
-
 	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -188,12 +234,87 @@ func UpdateUser(c *gin.Context) {
 	if !updateData.BirthDate.IsZero() {
 		updateFields["birthDate"] = updateData.BirthDate
 	}
-	err = collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$set": updateFields}, options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedUser)
+	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$set": updateFields})
+	if result.Err() != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": result.Err().Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully updated user"})
+}
+
+func UploadProfilePicture(c *gin.Context) {
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	profileFile, err := c.FormFile("profile_picture")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, updatedUser)
+	openedProfileFile, err := profileFile.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer openedProfileFile.Close()
+
+	profilePicturePath := fmt.Sprintf("uploads/%s/profile.jpg", decodedId)
+
+	_, err = supabase.SupabaseClient.Storage.UploadFile("users", profilePicturePath, openedProfileFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	profilePictureUrl := supabase.SupabaseClient.Storage.GetPublicUrl("users", profilePicturePath)
+
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{
+		"$set": bson.M{"profileImageUrl": profilePictureUrl},
+	})
+	if result.Err() != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully changed profile picture"})
+}
+func UploadBackgroundPicture(c *gin.Context) {
+	decodedId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	BackgroundFile, err := c.FormFile("background_picture")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	openedBackgroundFile, err := BackgroundFile.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer openedBackgroundFile.Close()
+
+	backgroundPicturePath := fmt.Sprintf("uploads/%s/background.jpg", decodedId)
+
+	_, err = supabase.SupabaseClient.Storage.UploadFile("users", backgroundPicturePath, openedBackgroundFile)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	backgroundPictureUrl := supabase.SupabaseClient.Storage.GetPublicUrl("users", backgroundPicturePath)
+
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+	result := collection.FindOneAndUpdate(ctx, bson.M{"_id": decodedId}, bson.M{"$set": bson.M{"backgroundImageUrl": backgroundPictureUrl.SignedURL}})
+	if result.Err() != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully changed background picture"})
 }
 func DeleteUser(c *gin.Context) {
 	var deletedUser User

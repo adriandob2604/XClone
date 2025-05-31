@@ -10,6 +10,7 @@ import (
 	"backend/login"
 	"backend/notifications"
 	"backend/posts"
+	"backend/supabase"
 	"backend/tags"
 	"backend/users"
 	"log"
@@ -20,7 +21,7 @@ import (
 )
 
 func CORS() cors.Config {
-	url := "http://localhost:3000"
+	url := "https://localhost"
 	config := cors.Config{
 		AllowOrigins:     []string{url},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -36,9 +37,9 @@ func init() {
 	if err := db.Connect(); err != nil {
 		log.Fatal("Couldn't connect to database")
 	}
-	// if err := supabase.ConnectToSupabase(); err != nil {
-	// 	log.Fatal("Couldn't connect to supabase")
-	// }
+	if err := supabase.ConnectToSupabase(); err != nil {
+		log.Fatal("Couldn't connect to supabase")
+	}
 }
 func main() {
 	gin.SetMode(gin.DebugMode)
@@ -49,15 +50,17 @@ func main() {
 	router.GET("/users/:username", authorization.AuthMiddleware(), users.GetUser)
 	router.GET("/me", authorization.AuthMiddleware(), users.Me)
 	router.PUT("/users", authorization.AuthMiddleware(), users.UpdateUser)
+	router.PUT("/me/profile-picture", authorization.AuthMiddleware(), users.UploadProfilePicture)
+	router.PUT("/me/background-picture", authorization.AuthMiddleware(), users.UploadBackgroundPicture)
 	router.DELETE("/users", authorization.AuthMiddleware(), users.DeleteUser)
 	router.GET("/to_follow", authorization.AuthMiddleware(), users.ToFollow)
 	router.POST("/login", login.Login)
-	router.GET("/posts/:id", posts.GetPost)
-	router.GET("/:username/posts", posts.GetPosts)
+	router.GET("/posts/:id", authorization.AuthMiddleware(), posts.GetPost)
+	router.GET("/:username/posts", authorization.AuthMiddleware(), posts.GetPosts)
 	router.POST("/posts", authorization.AuthMiddleware(), posts.CreatePost)
 	router.PATCH("/posts/:postId", authorization.AuthMiddleware(), posts.UpdatePost)
 	router.DELETE("/posts/:postId", authorization.AuthMiddleware(), posts.DeletePost)
-	router.GET("/trending", tags.TrendingTags)
+	router.GET("/trending", authorization.AuthMiddleware(), tags.TrendingTags)
 	router.GET("/for_you_posts", authorization.AuthMiddleware(), posts.GetForYouPosts)
 	router.GET("/following_posts", authorization.AuthMiddleware(), posts.GetFollowingPosts)
 	router.GET("/history", authorization.AuthMiddleware(), history.GetHistory)
