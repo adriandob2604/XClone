@@ -2,7 +2,7 @@ package tags
 
 import (
 	"backend/db"
-	"backend/posts"
+	"backend/services/post-service/posts"
 	"net/http"
 	"sort"
 

@@ -19,11 +19,17 @@ services:
     container_name: backend
     env_file:
       - ./backend/.env
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     networks:
       - backend_network
       - project_network
+  userService:
+    env_file:
+      - ./services/user-service/.env
+    ports:
+  postService:
+  interactionService:
   cache:
     build:
       context: ./nginx
@@ -33,6 +39,7 @@ services:
       - nginx_cache:/var/cache/nginx
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - project_network
   postgres:
@@ -60,6 +67,7 @@ services:
       - project_network
     command:
       - start-dev
+
 volumes:
   nginx_cache:
   pg_data:

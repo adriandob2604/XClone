@@ -131,10 +131,9 @@ export function CreatePost() {
     onSubmit: async (values) => {
       const notificationMessage = `${userData?.username} posted!`;
       const formData = new FormData();
-      formData.append("userId", userData?.id || "");
       formData.append("text", values.text);
       if (values.file) {
-        formData.append("file", values.file);
+        formData.append("postFile", values.file);
       }
       try {
         const [postResponse, notificationResponse] = await Promise.all([

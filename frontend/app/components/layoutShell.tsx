@@ -29,24 +29,24 @@ export default function LayoutShell({
   const showSearchBar = !["/messages", "/search"].includes(pathname);
   const isHomePage = pathname === "/";
   return (
-    <KeycloakProvider>
-      <main className="root-container">
-        <section>{!isHomePage && showHome && <LeftSideBar />}</section>
-        <nav>
-          {!isHomePage && showSearchBar && pathname === "/explore" && (
-            <Searchbar />
-          )}
-        </nav>
-        <aside>
-          {!isHomePage &&
-            showSearchBar &&
-            pathname !== "/explore" &&
-            showHome && <Searchbar />}
-          {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
-          {!isHomePage && showTrending && <Trending />}
-        </aside>
-        <div>{children}</div>
-      </main>
-    </KeycloakProvider>
+    // <KeycloakProvider>
+    <main className="root-container">
+      <section>{!isHomePage && showHome && <LeftSideBar />}</section>
+      <nav>
+        {!isHomePage && showSearchBar && pathname === "/explore" && (
+          <Searchbar />
+        )}
+      </nav>
+      <aside>
+        {!isHomePage &&
+          showSearchBar &&
+          pathname !== "/explore" &&
+          showHome && <Searchbar />}
+        {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
+        {!isHomePage && showTrending && <Trending />}
+      </aside>
+      <div>{children}</div>
+    </main>
+    // </KeycloakProvider>
   );
 }

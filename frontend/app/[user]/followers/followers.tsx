@@ -11,5 +11,5 @@ export default function Followers() {
   useEffect(() => {
     axios.get(`${url}/${username}/followers`);
   });
-  return <>Skibdii</>;
+  return <></>;
 }

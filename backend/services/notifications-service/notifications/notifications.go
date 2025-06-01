@@ -2,7 +2,7 @@ package notifications
 
 import (
 	"backend/db"
-	"backend/users"
+	"backend/services/users-service/users"
 	"net/http"
 	"time"
 

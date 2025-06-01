@@ -106,21 +106,17 @@ export function HomeMainPage() {
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
   return (
     <>
-      <>
-        <nav>
-          <div>
-            <button onClick={() => setActiveTab("forYou")}>For you</button>
-            <button onClick={() => setActiveTab("following")}>Following</button>
-          </div>
-          <div>
-            <CreatePost />
-          </div>
-        </nav>
-        {activeTab === "forYou" && <GetPosts url={`${url}/for_you_posts`} />}
-        {activeTab === "following" && (
-          <GetPosts url={`${url}/following_posts`} />
-        )}
-      </>
+      <nav>
+        <div>
+          <button onClick={() => setActiveTab("forYou")}>For you</button>
+          <button onClick={() => setActiveTab("following")}>Following</button>
+        </div>
+        <div>
+          <CreatePost />
+        </div>
+      </nav>
+      {activeTab === "forYou" && <GetPosts url={`${url}/for_you_posts`} />}
+      {activeTab === "following" && <GetPosts url={`${url}/following_posts`} />}
     </>
   );
 }

@@ -2,8 +2,10 @@ package explore
 
 import (
 	"backend/db"
-	"backend/posts"
-	"backend/users"
+
+	"backend/services/post-service/posts"
+	"backend/services/users-service/users"
+
 	"fmt"
 	"net/http"
 

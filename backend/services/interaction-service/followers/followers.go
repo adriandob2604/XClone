@@ -2,7 +2,7 @@ package followers
 
 import (
 	"backend/db"
-	"backend/users"
+	"backend/services/users-service/users"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

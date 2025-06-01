@@ -2,15 +2,15 @@ package posts
 
 import (
 	"backend/db"
+	"backend/services/users-service/users"
 	"backend/supabase"
-	"backend/users"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/supabase-community/storage-go"
+	storage_go "github.com/supabase-community/storage-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
