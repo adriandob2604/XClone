@@ -15,6 +15,6 @@ func main() {
 	router.POST("/history", history.PostHistoryItem)
 	router.DELETE("/history/:id", history.DeleteHistoryItem)
 	router.DELETE("/history", history.DeleteHistory)
-	router.Run(":5005")
+	router.Run(":5000")
 
 }

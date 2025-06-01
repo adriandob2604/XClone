@@ -18,5 +18,5 @@ func main() {
 	router.DELETE("/posts/:postId", posts.DeletePost)
 	router.GET("/for_you_posts", posts.GetForYouPosts)
 	router.GET("/following_posts", posts.GetFollowingPosts)
-	router.Run(":5004")
+	router.Run(":5000")
 }

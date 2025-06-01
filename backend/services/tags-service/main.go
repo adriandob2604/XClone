@@ -12,6 +12,6 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(corsConfig.CORS()))
 	router.GET("/trending", tags.TrendingTags)
-	router.Run(":5006")
+	router.Run(":5000")
 
 }

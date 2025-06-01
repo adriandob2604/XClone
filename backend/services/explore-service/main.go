@@ -14,6 +14,6 @@ func main() {
 	router.Use(cors.New(corsConfig.CORS()))
 	router.Use(authorization.AuthMiddleware())
 	router.GET("/explore", explore.GetExploreSearches)
-	router.Run(":5001")
+	router.Run(":5000")
 
 }

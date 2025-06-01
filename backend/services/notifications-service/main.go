@@ -13,5 +13,5 @@ func main() {
 	router.Use(cors.New(corsConfig.CORS()))
 	router.GET("/notifications", notifications.GetNotifications)
 	router.POST("/notifications", notifications.PostNotification)
-	router.Run(":5003")
+	router.Run(":5000")
 }

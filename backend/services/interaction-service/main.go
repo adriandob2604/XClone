@@ -16,5 +16,5 @@ func main() {
 	router.POST("/follow", followers.FollowUser)
 	router.DELETE("/unfollow/:userId", followers.UnfollowUser)
 	router.GET("/:username/followers", followers.Followers)
-	router.Run(":5002")
+	router.Run(":5000")
 }

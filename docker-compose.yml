@@ -19,17 +19,88 @@ services:
     container_name: backend
     env_file:
       - ./backend/.env
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     networks:
       - backend_network
       - project_network
-  userService:
+  explore-service:
+    build:
+      context: ./backend/explore-service
+      dockerfile: Dockerfile
+    container_name: explore-service
     env_file:
-      - ./services/user-service/.env
+      - ./backend/.env
     ports:
-  postService:
-  interactionService:
+      - "5001:5000"
+    networks:
+      - backend_network
+  interaction-service:
+    build:
+      context: ./backend/interaction-service
+      dockerfile: Dockerfile
+    container_name: interaction-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5002:5000"
+    networks:
+      - backend_network
+  notifications-service:
+    build:
+      context: ./backend/notifications-service
+      dockerfile: Dockerfile
+    container_name: notifications-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5003:5000"
+    networks:
+      - backend_network
+  post-service:
+    build:
+      context: ./backend/post-service
+      dockerfile: Dockerfile
+    container_name: post-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5004:5000"
+    networks:
+      - backend_network
+  search-history-service:
+    build:
+      context: ./backend/search-history-service
+      dockerfile: Dockerfile
+    container_name: search-history-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5005:5000"
+    networks:
+      - backend_network
+  tags-service:
+    build:
+      context: ./backend/tags-service
+      dockerfile: Dockerfile
+    container_name: tags-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5006:5000"
+    networks:
+      - backend_network
+  users-service:
+    build:
+      context: ./backend/users-service
+      dockerfile: Dockerfile
+    container_name: users-service
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5007:5000"
+    networks:
+      - backend_network
   cache:
     build:
       context: ./nginx
