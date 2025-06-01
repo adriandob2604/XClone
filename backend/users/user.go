@@ -3,20 +3,19 @@ package users
 import (
 	"backend/chats"
 	"backend/db"
+	"backend/keycloak"
 	"backend/password"
 	"backend/supabase"
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"math/rand"
 	"net/http"
-	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
@@ -94,16 +93,49 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"user": normalUser, "isOwn": false})
 	}
 }
-func GetAllUsers(c *gin.Context) {
+func GetDesiredUsers(c *gin.Context) {
 	var users []UserData
 	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
+	strLimit := c.DefaultQuery("limit", "10")
+	strOffset := c.DefaultQuery("offset", "0")
+	startsWith := c.DefaultQuery("startsWith", "a")
+	if len(startsWith) > 1 {
+		startsWith = string(startsWith[0])
+	}
+	limit, err := strconv.Atoi(strLimit)
+	if err != nil || limit < 1 {
+		limit = 10
+	}
+
+	offset, err := strconv.Atoi(strOffset)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	cursor, err := collection.Find(ctx, bson.M{"_id": bson.M{"$ne": decodedId.(primitive.ObjectID)}})
+	filter := bson.M{
+		"_id": bson.M{
+			"$ne": decodedId.(primitive.ObjectID),
+		},
+	}
+	if startsWith != "" {
+		filter["username"] = bson.M{
+			"$regex":   "^" + startsWith,
+			"$options": "i",
+		}
+	}
+	cursor, err := collection.Find(
+		ctx,
+		filter,
+		options.Find().
+			SetLimit(int64(limit)).
+			SetSkip(int64(offset)),
+	)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -142,60 +174,36 @@ func Me(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	keycloakUrl := "http://localhost:8080/auth/admin/realms/my-realm/users"
 	var newUser User
+	var keycloakUser keycloak.KeycloakUser
 	newUser.ID = primitive.NewObjectID()
+
+	token, err := keycloak.GetAdminToken()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get admin token"})
+		return
+	}
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	keycloakUser.Username = newUser.Username
+	keycloakUser.Password = newUser.Password
+	if err := keycloak.CreateKeycloakUser(token, keycloakUser, keycloakUrl); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	newUser.Password = password.HashPassword(newUser.Password)
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	_, err := collection.InsertOne(ctx, newUser)
+	_, err = collection.InsertOne(ctx, newUser)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-	keycloakPayload := map[string]interface{}{
-		"username": newUser.Username,
-		"email":    newUser.Email,
-		"enabled":  true,
-		"credentials": []map[string]interface{}{
-			{
-				"type":      "password",
-				"value":     newUser.Password,
-				"temporary": false,
-			},
-		},
-	}
-	payloadBytes, _ := json.Marshal(keycloakPayload)
-	req, err := http.NewRequest("POST", keycloakUrl, bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	adminToken := os.Getenv("KEYCLOAK_ADMIN_TOKEN")
-	req.Header.Set("Authorization", "Bearer "+adminToken)
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{
-		Timeout: time.Second * 10,
 	}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(resp.Body)
-		c.JSON(resp.StatusCode, gin.H{
-			"error":   "Keycloak error",
-			"details": string(body),
-		})
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{"message": "User created"})
+
 }
 
 func UpdateUser(c *gin.Context) {
@@ -317,31 +325,39 @@ func UploadBackgroundPicture(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully changed background picture"})
 }
 func DeleteUser(c *gin.Context) {
-	var deletedUser User
-	var user User
 	var foundUser User
-
 	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	token, err := keycloak.GetAdminToken()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
 
-	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
+	err = collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	err = collection.FindOneAndDelete(ctx, bson.M{"_id": decodedId}).Decode(&deletedUser)
+	keycloakUserId, err := keycloak.GetKeycloakUserId(token, foundUser.Username)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if err := keycloak.DeleteKeycloakUser(token, keycloakUserId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	res := collection.FindOneAndDelete(ctx, bson.M{"_id": decodedId})
+	if res.Err() != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": res.Err().Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Account deleted"})
