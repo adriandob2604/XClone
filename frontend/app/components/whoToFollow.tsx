@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { FollowUserProps, UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
 import axios from "axios";
+import { UserComponent } from "./userComponent";
 export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
   const keycloak = useContext(KeycloakContext);
   const [isFollowing, setIsFollowing] = useState<boolean[]>([]);
@@ -49,21 +50,14 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
     return (
       <>
         {users.map((user: UserData, index: number) => (
-          <div key={`${user.id}-${index}`}>
-            {/* <Image></Image> */}
-            <div>
-              <span>
-                {user.name} {user.surname}
-              </span>
-              <span>@{user.username}</span>
-            </div>
+          <UserComponent key={user.id} user={user}>
             {!isFollowing[index] && (
               <button onClick={() => follow(user, index)}>Follow</button>
             )}
             {isFollowing[index] && (
               <button onClick={() => unfollow(user, index)}>Following</button>
             )}
-          </div>
+          </UserComponent>
         ))}
       </>
     );

@@ -13,5 +13,4 @@ COPY --from=builder /backend/services/interaction-services/interaction-services 
 
 EXPOSE 5000
 
-
 CMD ["./interaction-services"]

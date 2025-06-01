@@ -325,10 +325,31 @@ func UploadBackgroundPicture(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully changed background picture"})
 }
 func DeleteUser(c *gin.Context) {
-	var foundUser User
+	var deletedUser User
 	decodedId, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	userId := c.Param("id")
+	objectUserId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if decodedId == objectUserId {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Can't delete yourself"})
+		return
+	}
+
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+
+	err = collection.FindOneAndDelete(ctx, bson.M{"_id": objectUserId}).Decode(&deletedUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
@@ -338,30 +359,20 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	ctx := c.Request.Context()
-	collection := db.Database.Collection("users")
-
-	err = collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	keycloakUserId, err := keycloak.GetKeycloakUserId(token, foundUser.Username)
+	keycloakUserId, err := keycloak.GetKeycloakUserId(token, deletedUser.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	if err := keycloak.DeleteKeycloakUser(token, keycloakUserId); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	res := collection.FindOneAndDelete(ctx, bson.M{"_id": decodedId})
-	if res.Err() != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": res.Err().Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Account deleted"})
 }
+
 func ToFollow(c *gin.Context) {
 	var users []UserData
 	var usersToFollow []UserData

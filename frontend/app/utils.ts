@@ -1,4 +1,3 @@
-import React from "react";
 
 export type DateInfo = {
   months: string[];
@@ -10,7 +9,13 @@ export type UserData = {
   name: string;
   surname: string;
   username: string;
+  profileImageUrl: string;
   createdOn: Date;
+};
+
+export type UserComponentProps = {
+  user: UserData
+  children?: React.ReactNode;
 };
 export type CommentData = {
   id: string;

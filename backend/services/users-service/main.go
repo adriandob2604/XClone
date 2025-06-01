@@ -18,7 +18,7 @@ func main() {
 	router.PUT("/users", users.UpdateUser)
 	router.PUT("/me/profile-picture", users.UploadProfilePicture)
 	router.PUT("/me/background-picture", users.UploadBackgroundPicture)
-	router.DELETE("/users/", users.DeleteUser)
+	router.DELETE("/users/:id", users.DeleteUser)
 	router.GET("/to_follow", users.ToFollow)
 	router.Run(":5000")
 }

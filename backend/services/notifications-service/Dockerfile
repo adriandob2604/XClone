@@ -11,4 +11,6 @@ WORKDIR /app
 
 COPY --from=builder /backend/services/notifications-services/notifications-services .
 
+EXPOSE 5000
+
 CMD ["./notifications-services"]

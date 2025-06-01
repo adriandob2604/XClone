@@ -10,6 +10,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /backend/services/explore-service/explore-service .
+
 EXPOSE 5000
 
 CMD ["./explore-service"]
