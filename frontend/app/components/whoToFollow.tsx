@@ -4,7 +4,7 @@ import { KeycloakContext } from "../keycloakprovider";
 import axios from "axios";
 import { UserComponent } from "./userComponent";
 export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
-  const keycloak = useContext(KeycloakContext);
+  const { keycloak } = useContext(KeycloakContext);
   const [isFollowing, setIsFollowing] = useState<boolean[]>([]);
   const follow = async (user: UserData, index: number) => {
     if (user) {

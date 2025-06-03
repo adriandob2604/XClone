@@ -15,16 +15,8 @@ export default function Profile() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [postCount, setPostCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
+
   useEffect(() => {
     const fetchData = async () => {
       try {

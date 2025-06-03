@@ -1,13 +1,13 @@
-import React from "react";
+// import React from "react";
 
-export default function ChatLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <section>
-      <div>{children}</div>
-    </section>
-  );
-}
+// export default function ChatLayout({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   return (
+//     <section>
+//       <div>{children}</div>
+//     </section>
+//   );
+// }

@@ -7,13 +7,13 @@ import { UserComponent } from "../components/userComponent";
 export default function AdminPanel() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [singleUser, setSingleUser] = useState<UserData | null>(null);
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  const { keycloak } = useContext(KeycloakContext);
   const [selectedLetter, setSelectedLetter] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [userDeleted, setUserDeleted] = useState<boolean[]>([]);
 
   useEffect(() => {
-    if (keycloak.hasRealmRole("admin") && isAuthenticated) {
+    if (keycloak.hasRealmRole("admin")) {
       axios
         .get("/users", {
           headers: {
@@ -26,12 +26,12 @@ export default function AdminPanel() {
         })
         .catch((err) => console.error(err));
     }
-  }, [keycloak.token, isAuthenticated, selectedLetter]);
+  }, [keycloak.token, selectedLetter]);
 
   const handleSearch = () => {
     if (!userInput.trim()) return;
 
-    if (keycloak.hasRealmRole("admin") && isAuthenticated) {
+    if (keycloak.hasRealmRole("admin")) {
       axios
         .get(`/users/${userInput}`, {
           headers: {
@@ -44,7 +44,7 @@ export default function AdminPanel() {
   };
 
   const deleteUser = (id: string, index: number) => {
-    if (keycloak.hasRealmRole("admin") && isAuthenticated) {
+    if (keycloak.hasRealmRole("admin")) {
       axios
         .delete(`/users/${id}`, {
           headers: {

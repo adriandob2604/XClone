@@ -1,11 +1,11 @@
 package tags
 
 import (
-	"backend/db"
-	"backend/services/post-service/posts"
 	"net/http"
 	"sort"
 
+	"github.com/adriandob2604/XClone/backend/db"
+	"github.com/adriandob2604/XClone/backend/services/post-service/posts"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"

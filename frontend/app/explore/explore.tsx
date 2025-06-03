@@ -14,15 +14,8 @@ export default function Explore() {
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
   const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
+
   const handleTrendingPosts = (tag: string) => {
     params.set("q", tag);
     router.push(`/search?${params.toString()}`);

@@ -77,7 +77,7 @@ export type TodaysNews = {
   title:string
   postCount: number
 }
-export const url = "https://localhost:5000"
+export const url = "https://localhost"
 export const letters = Array.from({ length: 26 }, (_, i) =>
   String.fromCharCode(65 + i)
 );

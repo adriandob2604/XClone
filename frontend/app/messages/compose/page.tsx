@@ -1,10 +1,10 @@
-import CreateMessage from "./createMessage";
-import MessagesComposeLayout from "./layout";
+// import CreateMessage from "./createMessage";
+// import MessagesComposeLayout from "./layout";
 
-export default function MessagesComposePage() {
-  return (
-    <MessagesComposeLayout>
-      <CreateMessage />
-    </MessagesComposeLayout>
-  );
-}
+// export default function MessagesComposePage() {
+//   return (
+//     <MessagesComposeLayout>
+//       <CreateMessage />
+//     </MessagesComposeLayout>
+//   );
+// }

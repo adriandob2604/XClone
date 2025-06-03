@@ -13,16 +13,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
   users,
   postData,
 }) => {
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
   const [isOwn, setIsOwn] = useState<boolean[]>([]);
   const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
@@ -93,16 +84,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 };
 
 export function CreatePost() {
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
   const [userData, setUserData] = useState<UserData | null>(null);
   const FILE_SIZE = 160 * 1024;
   useEffect(() => {
@@ -196,15 +178,7 @@ export function CreatePost() {
 
 export function GetPosts({ url }: { url: string }) {
   const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
   const [postData, setPostData] = useState<PostData[]>([]);
   const [user, setUser] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -245,16 +219,8 @@ export function GetPosts({ url }: { url: string }) {
   );
 }
 export function GetSinglePost() {
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
+
   const [postData, setPostData] = useState<PostData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);

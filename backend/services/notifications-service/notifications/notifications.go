@@ -1,11 +1,11 @@
 package notifications
 
 import (
-	"backend/db"
-	"backend/services/users-service/users"
 	"net/http"
 	"time"
 
+	"github.com/adriandob2604/XClone/backend/db"
+	"github.com/adriandob2604/XClone/backend/services/users-service/users"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

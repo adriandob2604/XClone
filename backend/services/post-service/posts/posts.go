@@ -1,14 +1,14 @@
 package posts
 
 import (
-	"backend/db"
-	"backend/services/users-service/users"
-	"backend/supabase"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
+	"github.com/adriandob2604/XClone/backend/db"
+	"github.com/adriandob2604/XClone/backend/services/users-service/users"
+	"github.com/adriandob2604/XClone/backend/supabase"
 	"github.com/gin-gonic/gin"
 	storage_go "github.com/supabase-community/storage-go"
 	"go.mongodb.org/mongo-driver/bson"

@@ -8,16 +8,8 @@ import { KeycloakContext } from "../keycloakprovider";
 export default function Notifications() {
   const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
+
   useEffect(() => {
     axios
       .get(`${url}/notifications`, {

@@ -1,17 +1,17 @@
 package users
 
 import (
-	"backend/chats"
-	"backend/db"
-	"backend/keycloak"
-	"backend/password"
-	"backend/supabase"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/adriandob2604/XClone/backend/chats"
+	"github.com/adriandob2604/XClone/backend/db"
+	"github.com/adriandob2604/XClone/backend/keycloak"
+	"github.com/adriandob2604/XClone/backend/password"
+	"github.com/adriandob2604/XClone/backend/supabase"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -172,7 +172,7 @@ func Me(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	keycloakUrl := "http://localhost:8080/auth/admin/realms/my-realm/users"
+	keycloakUrl := "http://keycloak:8080/admin/realms/my-realm/users"
 	var newUser User
 	var keycloakUser keycloak.KeycloakUser
 	newUser.ID = primitive.NewObjectID()
@@ -202,7 +202,7 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User created"})
+	c.JSON(http.StatusCreated, gin.H{"message": "User created"})
 
 }
 

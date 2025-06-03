@@ -1,14 +1,12 @@
 package explore
 
 import (
-	"backend/db"
-
-	"backend/services/post-service/posts"
-	"backend/services/users-service/users"
-
 	"fmt"
 	"net/http"
 
+	"github.com/adriandob2604/XClone/backend/db"
+	"github.com/adriandob2604/XClone/backend/services/post-service/posts"
+	"github.com/adriandob2604/XClone/backend/services/users-service/users"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )

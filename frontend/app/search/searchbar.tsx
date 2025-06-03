@@ -13,15 +13,8 @@ export default function Searchbar() {
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
   const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
+
   const refetchHistory = async () => {
     try {
       const response = await axios.get(`${url}/history`, {

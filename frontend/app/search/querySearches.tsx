@@ -18,16 +18,7 @@ export default function QuerySearches() {
   const [postData, setPostData] = useState<PostData[]>([]);
   const [noResults, setNoResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const router = useRouter();
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak } = useContext(KeycloakContext);
 
   useEffect(() => {
     try {

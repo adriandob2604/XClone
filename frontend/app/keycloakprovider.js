@@ -1,38 +1,29 @@
 import React, { createContext, useEffect, useState, useCallback } from 'react';
-import keycloak from './keycloak';
+import keycloak from './lib/keycloak';
 
 export const KeycloakContext = createContext();
 
 export const KeycloakProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const initKeycloak = async () => {
-      try {
-        const authenticated = await keycloak.init({
-          onLoad: 'check-sso',
-          checkLoginIframe: false,
-          silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
-        });
-        setIsAuthenticated(authenticated);
-      } catch (error) {
-        console.error('Keycloak initialization error:', error);
-      }
-    };
+  const initKeycloak = async () => {
+    try {
+      const authenticated = await keycloak.init({
+        onLoad: 'check-sso',
+        checkLoginIframe: false,
+        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+      });
+      setIsAuthenticated(authenticated);
+    } catch (error) {
+      console.error('Keycloak initialization error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    initKeycloak();
-    keycloak.onAuthSuccess = () => {
-      setIsAuthenticated(true);
-    };
-
-    keycloak.onAuthLogout = () => {
-      setIsAuthenticated(false);
-    };
-
-    return () => {
-      keycloak.onAuthSuccess = null;
-      keycloak.onAuthLogout = null;
-    };
-  }, []);
+  initKeycloak();
+}, []);
 
   const login = useCallback(() => {
     if (!isAuthenticated) {
@@ -50,7 +41,8 @@ export const KeycloakProvider = ({ children }) => {
         keycloak,
         isAuthenticated,
         login,
-        logout
+        logout,
+        loading
       }}
     >
       {children}

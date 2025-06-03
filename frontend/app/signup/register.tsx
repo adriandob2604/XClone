@@ -2,12 +2,11 @@
 import { JSX, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { RegisterDateInfo } from "@/app/utils";
+import { RegisterDateInfo, url } from "@/app/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
 export default function Register(): JSX.Element {
-  const url = "http://localhost:5000";
   const router = useRouter();
   const [isClicked, setIsClicked] = useState<boolean>(false);
 
@@ -65,7 +64,7 @@ export default function Register(): JSX.Element {
           ...registerValues,
         });
         console.log(response.status);
-        router.push("/login");
+        router.push("/");
       } catch {
         console.error("Error while registering");
       }

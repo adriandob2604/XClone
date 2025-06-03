@@ -5,22 +5,13 @@ import axios from "axios";
 import { CreatePost, GetPosts } from "../[user]/status/[postId]/post";
 import { UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
-import { useRouter } from "next/navigation";
 export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileClicked, setProfileClicked] = useState<boolean>(false);
-  const router = useRouter();
-  const { keycloak, logout, isAuthenticated } = useContext(KeycloakContext);
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    }
-  }, [isAuthenticated]);
-  if (!isAuthenticated) {
-    return <p>Not authenticated!</p>;
-  }
+  const { keycloak, logout } = useContext(KeycloakContext);
+
   useEffect(() => {
     try {
       axios

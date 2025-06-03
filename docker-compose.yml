@@ -9,25 +9,15 @@ services:
     networks:
       - frontend_network
       - project_network
+    volumes:
+      - ./frontend:/app
     depends_on:
       - keycloak
     restart: unless-stopped
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
-    env_file:
-      - ./backend/.env
-    ports:
-      - "5000:5000"
-    networks:
-      - backend_network
-      - project_network
+
   explore-service:
-    build:
-      context: ./backend/explore-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./explore-services"]
     container_name: explore-service
     env_file:
       - ./backend/.env
@@ -36,9 +26,8 @@ services:
     networks:
       - backend_network
   interaction-service:
-    build:
-      context: ./backend/interaction-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./interaction-services"]
     container_name: interaction-service
     env_file:
       - ./backend/.env
@@ -47,9 +36,8 @@ services:
     networks:
       - backend_network
   notifications-service:
-    build:
-      context: ./backend/notifications-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./notifications-services"]
     container_name: notifications-service
     env_file:
       - ./backend/.env
@@ -58,9 +46,8 @@ services:
     networks:
       - backend_network
   post-service:
-    build:
-      context: ./backend/post-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./post-services"]
     container_name: post-service
     env_file:
       - ./backend/.env
@@ -69,9 +56,8 @@ services:
     networks:
       - backend_network
   search-history-service:
-    build:
-      context: ./backend/search-history-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./search-history-services"]
     container_name: search-history-service
     env_file:
       - ./backend/.env
@@ -80,9 +66,8 @@ services:
     networks:
       - backend_network
   tags-service:
-    build:
-      context: ./backend/tags-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./tags-services"]
     container_name: tags-service
     env_file:
       - ./backend/.env
@@ -91,16 +76,21 @@ services:
     networks:
       - backend_network
   users-service:
-    build:
-      context: ./backend/users-service
-      dockerfile: Dockerfile
+    image: backend-microservices
+    command: ["./users-services"]
     container_name: users-service
     env_file:
       - ./backend/.env
     ports:
       - "5007:5000"
+    depends_on:
+      cache:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
     networks:
       - backend_network
+      - project_network
   cache:
     build:
       context: ./nginx
@@ -112,6 +102,7 @@ services:
       - "80:80"
       - "443:443"
     networks:
+      - backend_network
       - project_network
   postgres:
     image: postgres:16
@@ -129,16 +120,24 @@ services:
     container_name: keycloak
     env_file:
       - ./keycloak/.env
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
     ports:
       - "8080:8080"
     depends_on:
       - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 10s
+      retries: 15
     networks:
       - frontend_network
       - project_network
+      - backend_network
     command:
       - start-dev
-
 volumes:
   nginx_cache:
   pg_data:
