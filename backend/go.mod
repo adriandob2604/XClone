@@ -3,10 +3,10 @@ module github.com/adriandob2604/XClone/backend
 go 1.24.2
 
 require (
+	github.com/MicahParks/keyfunc v1.9.0
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.1
-	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/joho/godotenv v1.5.1
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/supabase-community/storage-go v0.7.0
 	github.com/supabase-community/supabase-go v0.0.4
 	go.mongodb.org/mongo-driver v1.17.3

@@ -2,13 +2,15 @@ package authorization
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/MicahParks/keyfunc"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -40,11 +42,23 @@ func GenerateJWT(userId primitive.ObjectID) (string, error) {
 
 	return s, nil
 }
-func VerifyJWT(tokenString string) (*jwt.Token, error) {
-	var key = []byte(os.Getenv("SECRET"))
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-		return key, nil
+
+var keycloakJWKS *keyfunc.JWKS
+
+func InitJWKS() error {
+	jwksURL := os.Getenv("KEYCLOAK_JWKS_URL")
+
+	var err error
+	keycloakJWKS, err = keyfunc.Get(jwksURL, keyfunc.Options{
+		RefreshInterval: time.Hour,
+		RefreshErrorHandler: func(err error) {
+			log.Printf("JWKS refresh error: %v", err)
+		},
 	})
+	return err
+}
+func VerifyJWT(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, keycloakJWKS.Keyfunc)
 	if err != nil {
 		return nil, err
 	}
@@ -53,23 +67,19 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 	}
 	return token, nil
 }
-func DecodeJWT(tokenString string) (primitive.ObjectID, error) {
+func DecodeJWT(tokenString string) (string, error) {
 	token, err := VerifyJWT(tokenString)
 	if err != nil {
-		return primitive.NilObjectID, fmt.Errorf("Couldn't verify token")
+		return "", fmt.Errorf("Couldn't verify token")
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		idStr, ok := claims["userId"].(string)
+		sub, ok := claims["sub"].(string)
 		if !ok {
-			return primitive.NilObjectID, fmt.Errorf("Couldn't verify id")
+			return "", fmt.Errorf("Couldn't find 'sub' in token")
 		}
-		id, err := primitive.ObjectIDFromHex(idStr)
-		if err != nil {
-			return primitive.NilObjectID, err
-		}
-		return id, nil
+		return sub, nil
 	}
-	return primitive.NilObjectID, fmt.Errorf("Token doesn't match")
+	return "", fmt.Errorf("Token doesn't match")
 }
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {

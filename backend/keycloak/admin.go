@@ -111,7 +111,7 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 	return nil
 }
 func GetKeycloakUserId(token string, username string) (string, error) {
-	url := fmt.Sprintf("http://localhost:8080/auth/admin/realms/my-realm/users?username=%s", username)
+	url := fmt.Sprintf("http://localhost:8080/admin/realms/my-realm/users?username=%s", username)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

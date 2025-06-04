@@ -19,6 +19,9 @@ func init() {
 	if err := supabase.ConnectToSupabase(); err != nil {
 		log.Fatal("Couldn't connect to supabase")
 	}
+	if err := authorization.InitJWKS(); err != nil {
+		log.Fatalf("Failed to initialize JWKS: %v", err)
+	}
 }
 func main() {
 	router := gin.Default()

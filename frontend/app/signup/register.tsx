@@ -1,15 +1,16 @@
 "use client";
-import { JSX, useState } from "react";
+import { JSX, useContext, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { RegisterDateInfo, url } from "@/app/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { KeycloakContext } from "../keycloakprovider";
 
 export default function Register(): JSX.Element {
   const router = useRouter();
   const [isClicked, setIsClicked] = useState<boolean>(false);
-
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
   const registerForm = useFormik({
     initialValues: {
       name: "",
@@ -47,6 +48,8 @@ export default function Register(): JSX.Element {
       birthDate: Yup.date().required("Required"),
     }),
     onSubmit: async (values) => {
+      console.log(keycloak.token);
+      console.log(isAuthenticated);
       values = {
         ...values,
         birthDate: new Date(
@@ -60,9 +63,15 @@ export default function Register(): JSX.Element {
       const { day, month, year, ...registerValues } = values;
 
       try {
-        const response = await axios.post(`${url}/users`, {
-          ...registerValues,
-        });
+        const response = await axios.post(
+          `${url}/users`,
+          { ...registerValues },
+          {
+            headers: {
+              Authorization: `Bearer ${keycloak.token}`,
+            },
+          }
+        );
         console.log(response.status);
         router.push("/");
       } catch {
