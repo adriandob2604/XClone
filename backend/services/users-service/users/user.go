@@ -2,12 +2,19 @@ package users
 
 import (
 	"fmt"
+<<<<<<< HEAD
+=======
+	"log"
+>>>>>>> 1eba963 (restoring repo)
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/adriandob2604/XClone/backend/chats"
+=======
+>>>>>>> 1eba963 (restoring repo)
 	"github.com/adriandob2604/XClone/backend/db"
 	"github.com/adriandob2604/XClone/backend/keycloak"
 	"github.com/adriandob2604/XClone/backend/password"
@@ -32,7 +39,10 @@ type User struct {
 	BirthDate       time.Time          `json:"birthDate" bson:"birthDate"`
 	Followers       []Follower         `json:"followers" bson:"followers"`
 	Following       []Follower         `json:"following" bson:"following"`
+<<<<<<< HEAD
 	Chats           []chats.Chat       `json:"chats" bson:"chats"`
+=======
+>>>>>>> 1eba963 (restoring repo)
 }
 
 type UserUpdateData struct {
@@ -172,13 +182,21 @@ func Me(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
+<<<<<<< HEAD
 	keycloakUrl := "http://keycloak:8080/admin/realms/my-realm/users"
+=======
+	keycloakUrl := "https://cache/auth/admin/realms/my-realm/users"
+>>>>>>> 1eba963 (restoring repo)
 	var newUser User
 	var keycloakUser keycloak.KeycloakUser
 	newUser.ID = primitive.NewObjectID()
 
 	token, err := keycloak.GetAdminToken()
 	if err != nil {
+<<<<<<< HEAD
+=======
+		log.Printf("Failed to get admin token: %v", err)
+>>>>>>> 1eba963 (restoring repo)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get admin token"})
 		return
 	}
