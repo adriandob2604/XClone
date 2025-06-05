@@ -11,7 +11,6 @@ export function LeftSideBar(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileClicked, setProfileClicked] = useState<boolean>(false);
   const { keycloak, logout } = useContext(KeycloakContext);
-
   useEffect(() => {
     try {
       axios

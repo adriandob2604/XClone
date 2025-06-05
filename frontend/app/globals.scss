@@ -18,6 +18,7 @@ a {
   justify-content: space-evenly;
   align-items: center;
   height: 100vh;
+<<<<<<< HEAD
   .create-account-container {
     width: 800px;
     margin: -4%;
@@ -26,10 +27,23 @@ a {
       font-weight: bold;
       width: 256px;
 
+=======
+  width: 100vw;
+  .create-account-container {
+    width: 800px;
+    margin: -4%;
+    font-size: large;
+    font-weight: bold;
+    width: 256px;
+    h3 {
+      font-size: xx-large;
+    }
+>>>>>>> 1eba963 (restoring repo)
       .register-container {
         display: flex;
         justify-content:space-evenly;
         align-items: center;
+<<<<<<< HEAD
 
         margin-top: 16px;
         padding: 8px 32px 8px 32px;
@@ -38,6 +52,17 @@ a {
         color: black;
         font-size: smaller;
       }
+=======
+        margin-top: 16px;
+        padding: 8px 32px 8px 32px;
+        border-radius: 32px;
+        font-size: smaller;
+        background-color: rgb(29, 155, 240);
+        color: white;
+        
+        }
+        
+>>>>>>> 1eba963 (restoring repo)
       a.register-container:nth-child(4) {
         background-color: rgba(0, 166, 255, 0.875);
         color: white;
@@ -48,6 +73,7 @@ a {
         color: rgba(0, 166, 255, 0.875);
         border: 0.5px solid gray;
       }
+<<<<<<< HEAD
       // div.register-container:nth-child(6) {
       //   background-color: black;
       //   border: solid 0.1px rgb(144, 144, 144);
@@ -56,6 +82,8 @@ a {
       //   }
       // }
      
+=======
+>>>>>>> 1eba963 (restoring repo)
       .or-container {
         display: flex;
         justify-content: center;
@@ -71,10 +99,30 @@ a {
      
       }
       .reminder {
+<<<<<<< HEAD
         margin-top: 16%;
+=======
+        margin-top: 36px;
+        font-size: medium;
+        margin-bottom: 16px;
+      }
+    .login-button {
+        width: 100%;
+        margin-top: 16px;
+        border-radius: 32px;
+        border-color: rgb(157, 157, 157);
+        border-width: 1px;
+        font-weight:bold;
+        padding: 8px;
+        background-color: rgb(0,0,0,0);
+        color: rgb(29, 155, 240);
+>>>>>>> 1eba963 (restoring repo)
       }
     }
  
   }
 
+<<<<<<< HEAD
 }
+=======
+>>>>>>> 1eba963 (restoring repo)

@@ -32,7 +32,11 @@ func GetAdminToken() (string, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
+<<<<<<< HEAD
 		"http://localhost:8080/realms/master/protocol/openid-connect/token",
+=======
+		"https://cache/auth/realms/master/protocol/openid-connect/token",
+>>>>>>> 1eba963 (restoring repo)
 		strings.NewReader(data.Encode()),
 	)
 	if err != nil {
@@ -90,7 +94,11 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 		return err
 	}
 
+<<<<<<< HEAD
 	req, err := http.NewRequest("POST", "http://localhost:8080/admin/realms/my-realm/users", bytes.NewBuffer(jsonData))
+=======
+	req, err := http.NewRequest("POST", "https://cache/auth/admin/realms/my-realm/users", bytes.NewBuffer(jsonData))
+>>>>>>> 1eba963 (restoring repo)
 	if err != nil {
 		return err
 	}
@@ -111,7 +119,11 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 	return nil
 }
 func GetKeycloakUserId(token string, username string) (string, error) {
+<<<<<<< HEAD
 	url := fmt.Sprintf("http://localhost:8080/admin/realms/my-realm/users?username=%s", username)
+=======
+	url := fmt.Sprintf("https://cache/auth/admin/realms/my-realm/users?username=%s", username)
+>>>>>>> 1eba963 (restoring repo)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -146,7 +158,11 @@ func GetKeycloakUserId(token string, username string) (string, error) {
 }
 
 func DeleteKeycloakUser(token, userId string) error {
+<<<<<<< HEAD
 	url := fmt.Sprintf("http://localhost:8080/auth/admin/realms/my-realm/users/%s", userId)
+=======
+	url := fmt.Sprintf("https://cache/auth/auth/admin/realms/my-realm/users/%s", userId)
+>>>>>>> 1eba963 (restoring repo)
 
 	req, _ := http.NewRequest("DELETE", url, nil)
 	req.Header.Set("Authorization", "Bearer "+token)
