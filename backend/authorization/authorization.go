@@ -1,10 +1,7 @@
 package authorization
 
 import (
-<<<<<<< HEAD
-=======
 	"crypto/tls"
->>>>>>> 1eba963 (restoring repo)
 	"fmt"
 	"log"
 	"net/http"
@@ -51,11 +48,6 @@ var keycloakJWKS *keyfunc.JWKS
 
 func InitJWKS() error {
 	jwksURL := os.Getenv("KEYCLOAK_JWKS_URL")
-<<<<<<< HEAD
-
-	var err error
-	keycloakJWKS, err = keyfunc.Get(jwksURL, keyfunc.Options{
-=======
 	maxRetries := 10
 	var err error
 
@@ -73,14 +65,10 @@ func InitJWKS() error {
 	}
 
 	options := keyfunc.Options{
->>>>>>> 1eba963 (restoring repo)
 		RefreshInterval: time.Hour,
 		RefreshErrorHandler: func(err error) {
 			log.Printf("JWKS refresh error: %v", err)
 		},
-<<<<<<< HEAD
-	})
-=======
 		Client: httpClient,
 	}
 
@@ -96,7 +84,6 @@ func InitJWKS() error {
 		time.Sleep(5 * time.Second)
 	}
 
->>>>>>> 1eba963 (restoring repo)
 	return err
 }
 func VerifyJWT(tokenString string) (*jwt.Token, error) {

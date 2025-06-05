@@ -5,13 +5,6 @@ x-backend-service: &backend_service
   networks:
     - backend_network
   depends_on:
-<<<<<<< HEAD
-    keycloak:
-      condition: service_healthy
-    cache:
-      condition: service_healthy
-services:
-=======
     - keycloak
     - postgres
 
@@ -54,7 +47,6 @@ services:
       timeout: 3s
       retries: 10
 
->>>>>>> 1eba963 (restoring repo)
   frontend:
     build:
       context: ./frontend
