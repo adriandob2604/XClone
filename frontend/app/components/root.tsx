@@ -8,7 +8,7 @@ export default function Root(): JSX.Element {
   const router = useRouter();
   const redirectUri = "http://localhost:3000/home";
   return (
-    <main className="root-container">
+    <main className="root-page-container">
       <div className="logo-container">
         <Image
           alt="Logo"
@@ -24,28 +24,6 @@ export default function Root(): JSX.Element {
         <h3>Join today.</h3>
         <div>
           <div className="create-login-container">
-            <div className="register-container">
-              <Image
-                alt="Google logo"
-                src="/google.png"
-                width={24}
-                height={24}
-              />
-              {/* <button onClick={() => SocialLogin("google")}> */}
-              Register through Google
-              {/* </button> */}
-            </div>
-            <div className="register-container">
-              <Image alt="Apple logo" src="/apple.png" width={24} height={24} />
-              {/* <button onClick={() => SocialLogin("apple")}> */}
-              Register through Apple
-              {/* </button> */}
-            </div>
-            <div className="or-container">
-              <div className="separator"></div>
-              <div>Or</div>
-              <div className="separator"></div>
-            </div>
             <Link href="/signup" className="register-container">
               Create an account
             </Link>

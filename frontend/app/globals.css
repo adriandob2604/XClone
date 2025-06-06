@@ -1,4 +1,4 @@
-/* body {
+body {
   background-color: black;
   color: white;
   margin: 0;
@@ -12,25 +12,22 @@ a {
   text-decoration: none;
 }
 
-.root-container {
+.root-page-container {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   height: 100vh;
 }
-.root-container .create-account-container {
+.root-page-container .create-account-container {
   width: 800px;
   margin: -4%;
 }
-.root-container .create-account-container .create-login-container {
+.root-page-container .create-account-container .create-login-container {
   font-size: large;
   font-weight: bold;
   width: 256px;
 }
-.root-container
-  .create-account-container
-  .create-login-container
-  .register-container {
+.root-page-container .create-account-container .create-login-container .register-container {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
@@ -41,41 +38,40 @@ a {
   color: black;
   font-size: smaller;
 }
-.root-container
-  .create-account-container
-  .create-login-container
-  a.register-container:nth-child(4) {
+.root-page-container .create-account-container .create-login-container a.register-container:nth-child(4) {
   background-color: rgba(0, 166, 255, 0.875);
   color: white;
 }
-.root-container
-  .create-account-container
-  .create-login-container
-  a.register-container:nth-child(6) {
+.root-page-container .create-account-container .create-login-container a.register-container:nth-child(6) {
   background-color: black;
   color: rgba(0, 166, 255, 0.875);
   border: 0.5px solid gray;
 }
-.root-container
-  .create-account-container
-  .create-login-container
-  .or-container {
+.root-page-container .create-account-container .create-login-container .or-container {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 8px;
   font-size: small;
 }
-.root-container
-  .create-account-container
-  .create-login-container
-  .or-container
-  .separator {
+.root-page-container .create-account-container .create-login-container .or-container .separator {
   border: outset 1px rgb(70, 69, 69);
   width: 48%;
   margin-left: 4%;
   margin-right: 4%;
 }
-.root-container .create-account-container .create-login-container .reminder {
+.root-page-container .create-account-container .create-login-container .reminder {
   margin-top: 16%;
-} */
+}
+
+.account-detail-container {
+  width: 60%;
+  height: 100%;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  justify-content: center;
+  background-color: wheat;
+}/*# sourceMappingURL=globals.css.map */

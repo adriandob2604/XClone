@@ -78,6 +78,8 @@ export default function Register(): JSX.Element {
       className="account-detail-container"
       onSubmit={registerForm.handleSubmit}
     >
+      <h2>Create an account</h2>
+
       {!isClicked ? (
         <>
           <div className="account-details">
