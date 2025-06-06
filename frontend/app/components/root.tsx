@@ -24,22 +24,12 @@ export default function Root(): JSX.Element {
         <h1>The Freshest news from around the world</h1>
         <h3>Join today.</h3>
         <div>
-<<<<<<< HEAD
           <div className="create-login-container">
-=======
-          <div className="create-account-button">
->>>>>>> 1eba963 (restoring repo)
             <Link href="/signup" className="register-container">
               Create an account
             </Link>
             <div className="reminder">Already have an account?</div>
-<<<<<<< HEAD
             <button onClick={handleKeycloakLogin}>Log in</button>
-=======
-            <button onClick={handleKeycloakLogin} className="login-button">
-              Log in
-            </button>
->>>>>>> 1eba963 (restoring repo)
           </div>
         </div>
       </div>

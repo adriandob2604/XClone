@@ -48,8 +48,6 @@ export default function Register(): JSX.Element {
       birthDate: Yup.date().required("Required"),
     }),
     onSubmit: async (values) => {
-      console.log(keycloak.token);
-      console.log(isAuthenticated);
       values = {
         ...values,
         birthDate: new Date(
@@ -63,15 +61,9 @@ export default function Register(): JSX.Element {
       const { day, month, year, ...registerValues } = values;
 
       try {
-        const response = await axios.post(
-          `${url}/users`,
-          { ...registerValues },
-          {
-            headers: {
-              Authorization: `Bearer ${keycloak.token}`,
-            },
-          }
-        );
+        const response = await axios.post(`${url}/users`, {
+          ...registerValues,
+        });
         console.log(response.status);
         router.push("/");
       } catch {

@@ -36,9 +36,9 @@ services:
     networks:
       - project_network
       - backend_network
-    command:
-      - start-dev
-      - --import-realm
+    command: >
+      start-dev --proxy-headers=xforwarded --hostname-strict=false --hostname-strict-https=false --hostname-admin-url=https://localhost/auth
+
     volumes:
       - ./keycloak/data/import:/opt/keycloak/data/import
     healthcheck:
@@ -55,28 +55,10 @@ services:
     ports:
       - "3000:3000"
     networks:
-<<<<<<< HEAD
-      - frontend_network
-      - project_network
-    volumes:
-      - ./frontend:/app
-    depends_on:
-      - keycloak
-    restart: unless-stopped
-=======
       - project_network
     volumes:
       - ./frontend:/app
     restart: unless-stopped
-    depends_on:
-      - explore-service
-      - interaction-service
-      - notifications-service
-      - post-service
-      - search-history-service
-      - tags-service
-      - users-service
-
   cache:
     build:
       context: ./nginx
@@ -91,9 +73,16 @@ services:
       - backend_network
       - project_network
     depends_on:
-      - frontend
+      - explore-service
+      - interaction-service
+      - notifications-service
+      - post-service
+      - search-history-service
+      - tags-service
+      - users-service
+      - keycloak
+
     restart: on-failure
->>>>>>> 1eba963 (restoring repo)
 
   explore-service:
     <<: *backend_service
@@ -115,115 +104,30 @@ services:
     container_name: notifications-service
     ports:
       - "5003:5000"
-<<<<<<< HEAD
-=======
-
->>>>>>> 1eba963 (restoring repo)
   post-service:
     <<: *backend_service
     command: ["./post-services"]
     container_name: post-service
     ports:
       - "5004:5000"
-<<<<<<< HEAD
-=======
-
->>>>>>> 1eba963 (restoring repo)
   search-history-service:
     <<: *backend_service
     command: ["./search-history-services"]
     container_name: search-history-service
     ports:
       - "5005:5000"
-<<<<<<< HEAD
-=======
-
->>>>>>> 1eba963 (restoring repo)
   tags-service:
     <<: *backend_service
     command: ["./tags-services"]
     container_name: tags-service
     ports:
       - "5006:5000"
-<<<<<<< HEAD
-=======
-
->>>>>>> 1eba963 (restoring repo)
   users-service:
     <<: *backend_service
     command: ["./users-services"]
     container_name: users-service
     ports:
       - "5007:5000"
-<<<<<<< HEAD
-  cache:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    container_name: cache
-    volumes:
-      - nginx_cache:/var/cache/nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - backend_network
-      - project_network
-
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    env_file:
-      - ./postgres/.env
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - project_network
-    healthcheck:
-      test: ["CMD", "curl", "-fk", "https://localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0.1
-    container_name: keycloak
-    env_file:
-      - ./keycloak/.env
-    environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    networks:
-      - frontend_network
-      - project_network
-      - backend_network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:8080/realms/my-realm/.well-known/openid-configuration",
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    command:
-      - start-dev
-volumes:
-  nginx_cache:
-  pg_data:
-networks:
-  project_network:
-    name: project_network
-  frontend_network:
-    name: frontend_network
-=======
 
 volumes:
   nginx_cache:
@@ -232,6 +136,5 @@ volumes:
 networks:
   project_network:
     name: project_network
->>>>>>> 1eba963 (restoring repo)
   backend_network:
     name: backend_network

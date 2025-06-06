@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 /* body {
-=======
-body {
->>>>>>> 1eba963 (restoring repo)
   background-color: black;
   color: white;
   margin: 0;
@@ -21,38 +17,23 @@ a {
   justify-content: space-evenly;
   align-items: center;
   height: 100vh;
-<<<<<<< HEAD
-=======
-  width: 100vw;
->>>>>>> 1eba963 (restoring repo)
 }
 .root-container .create-account-container {
   width: 800px;
   margin: -4%;
-<<<<<<< HEAD
 }
 .root-container .create-account-container .create-login-container {
-=======
->>>>>>> 1eba963 (restoring repo)
   font-size: large;
   font-weight: bold;
   width: 256px;
 }
-<<<<<<< HEAD
 .root-container .create-account-container .create-login-container .register-container {
-=======
-.root-container .create-account-container h3 {
-  font-size: xx-large;
-}
-.root-container .create-account-container .register-container {
->>>>>>> 1eba963 (restoring repo)
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   margin-top: 16px;
   padding: 8px 32px 8px 32px;
   border-radius: 32px;
-<<<<<<< HEAD
   background-color: white;
   color: black;
   font-size: smaller;
@@ -62,61 +43,23 @@ a {
   color: white;
 }
 .root-container .create-account-container .create-login-container a.register-container:nth-child(6) {
-=======
-  font-size: smaller;
-  background-color: rgb(29, 155, 240);
-  color: white;
-}
-.root-container .create-account-container a.register-container:nth-child(4) {
-  background-color: rgba(0, 166, 255, 0.875);
-  color: white;
-}
-.root-container .create-account-container a.register-container:nth-child(6) {
->>>>>>> 1eba963 (restoring repo)
   background-color: black;
   color: rgba(0, 166, 255, 0.875);
   border: 0.5px solid gray;
 }
-<<<<<<< HEAD
 .root-container .create-account-container .create-login-container .or-container {
-=======
-.root-container .create-account-container .or-container {
->>>>>>> 1eba963 (restoring repo)
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 8px;
   font-size: small;
 }
-<<<<<<< HEAD
 .root-container .create-account-container .create-login-container .or-container .separator {
-=======
-.root-container .create-account-container .or-container .separator {
->>>>>>> 1eba963 (restoring repo)
   border: outset 1px rgb(70, 69, 69);
   width: 48%;
   margin-left: 4%;
   margin-right: 4%;
 }
-<<<<<<< HEAD
 .root-container .create-account-container .create-login-container .reminder {
   margin-top: 16%;
 }# sourceMappingURL=globals.css.map */
-=======
-.root-container .create-account-container .reminder {
-  margin-top: 36px;
-  font-size: medium;
-  margin-bottom: 16px;
-}
-.root-container .create-account-container .login-button {
-  width: 100%;
-  margin-top: 16px;
-  border-radius: 32px;
-  border-color: rgb(157, 157, 157);
-  border-width: 1px;
-  font-weight: bold;
-  padding: 8px;
-  background-color: rgba(0, 0, 0, 0);
-  color: rgb(29, 155, 240);
-}/*# sourceMappingURL=globals.css.map */
->>>>>>> 1eba963 (restoring repo)

@@ -3,6 +3,7 @@ package keycloak
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,11 +33,7 @@ func GetAdminToken() (string, error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-<<<<<<< HEAD
-		"http://localhost:8080/realms/master/protocol/openid-connect/token",
-=======
 		"https://cache/auth/realms/master/protocol/openid-connect/token",
->>>>>>> 1eba963 (restoring repo)
 		strings.NewReader(data.Encode()),
 	)
 	if err != nil {
@@ -44,7 +41,18 @@ func GetAdminToken() (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := http.DefaultClient.Do(req)
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	customTransport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+	httpClient := &http.Client{
+		Transport: customTransport,
+		Timeout:   10 * time.Second,
+	}
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTP request failed: %w", err)
 	}
@@ -54,6 +62,7 @@ func GetAdminToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	fmt.Println("Keycloak response body:", string(body))
 	fmt.Println("Keycloak response status:", resp.StatusCode)
 
@@ -73,8 +82,10 @@ func GetAdminToken() (string, error) {
 	if result.AccessToken == "" {
 		return "", errors.New("empty access token in response")
 	}
+
 	return result.AccessToken, nil
 }
+
 func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) error {
 	userData := map[string]interface{}{
 		"username": user.Username,
@@ -94,36 +105,40 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 		return err
 	}
 
-<<<<<<< HEAD
-	req, err := http.NewRequest("POST", "http://localhost:8080/admin/realms/my-realm/users", bytes.NewBuffer(jsonData))
-=======
-	req, err := http.NewRequest("POST", "https://cache/auth/admin/realms/my-realm/users", bytes.NewBuffer(jsonData))
->>>>>>> 1eba963 (restoring repo)
+	req, err := http.NewRequest("POST", keycloakUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
-	client := &http.Client{}
-	resp, err := client.Do(req)
+
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	customTransport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+	httpClient := &http.Client{
+		Transport: customTransport,
+		Timeout:   10 * time.Second,
+	}
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("failed to create user: %s", string(bodyBytes))
 	}
 
 	return nil
 }
+
 func GetKeycloakUserId(token string, username string) (string, error) {
-<<<<<<< HEAD
-	url := fmt.Sprintf("http://localhost:8080/admin/realms/my-realm/users?username=%s", username)
-=======
-	url := fmt.Sprintf("https://cache/auth/admin/realms/my-realm/users?username=%s", username)
->>>>>>> 1eba963 (restoring repo)
+	url := fmt.Sprintf("https://localhost/auth/admin/realms/my-realm/users?username=%s", username)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -158,11 +173,7 @@ func GetKeycloakUserId(token string, username string) (string, error) {
 }
 
 func DeleteKeycloakUser(token, userId string) error {
-<<<<<<< HEAD
-	url := fmt.Sprintf("http://localhost:8080/auth/admin/realms/my-realm/users/%s", userId)
-=======
-	url := fmt.Sprintf("https://cache/auth/auth/admin/realms/my-realm/users/%s", userId)
->>>>>>> 1eba963 (restoring repo)
+	url := fmt.Sprintf("https://localhost/auth/auth/admin/realms/my-realm/users/%s", userId)
 
 	req, _ := http.NewRequest("DELETE", url, nil)
 	req.Header.Set("Authorization", "Bearer "+token)

@@ -11,15 +11,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-<<<<<<< HEAD
         <KeycloakProvider>
           <LayoutShell>{children}</LayoutShell>
         </KeycloakProvider>
-=======
-        {/* <KeycloakProvider> */}
-        <LayoutShell>{children}</LayoutShell>
-        {/* </KeycloakProvider> */}
->>>>>>> 1eba963 (restoring repo)
       </body>
     </html>
   );

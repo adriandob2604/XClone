@@ -12,7 +12,7 @@ export const KeycloakProvider = ({ children }) => {
       const authenticated = await keycloak.init({
         onLoad: 'check-sso',
         checkLoginIframe: false,
-        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+        silentCheckSsoRedirectUri: typeof window !== 'undefined' ? window.location.origin + '/silent-check-sso.html': undefined
       });
       setIsAuthenticated(authenticated);
     } catch (error) {
