@@ -19,19 +19,19 @@ import (
 )
 
 type User struct {
-	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	BackgroundImage string             `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
-	ProfileImage    string             `json:"profileImageUrl" bson:"profileImageUrl"`
-	Name            string             `json:"name" bson:"name"`
-	Surname         string             `json:"surname" bson:"surname"`
-	Username        string             `json:"username" bson:"username"`
-	Password        string             `json:"password" bson:"password"`
-	Email           string             `json:"email" bson:"email"`
-	PhoneNumber     string             `json:"phoneNumber" bson:"phoneNumber"`
-	CreatedOn       time.Time          `json:"createdOn" bson:"createdOn"`
-	BirthDate       time.Time          `json:"birthDate" bson:"birthDate"`
-	Followers       []Follower         `json:"followers" bson:"followers"`
-	Following       []Follower         `json:"following" bson:"following"`
+	ID              string     `bson:"_id"`
+	BackgroundImage string     `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
+	ProfileImage    string     `json:"profileImageUrl" bson:"profileImageUrl"`
+	Name            string     `json:"name" bson:"name"`
+	Surname         string     `json:"surname" bson:"surname"`
+	Username        string     `json:"username" bson:"username"`
+	Password        string     `json:"password" bson:"password"`
+	Email           string     `json:"email" bson:"email"`
+	PhoneNumber     string     `json:"phoneNumber" bson:"phoneNumber"`
+	CreatedOn       time.Time  `json:"createdOn" bson:"createdOn"`
+	BirthDate       time.Time  `json:"birthDate" bson:"birthDate"`
+	Followers       []Follower `json:"followers" bson:"followers"`
+	Following       []Follower `json:"following" bson:"following"`
 }
 
 type UserUpdateData struct {
@@ -44,15 +44,15 @@ type UserUpdateData struct {
 	BirthDate   time.Time `json:"birthDate" `
 }
 type UserData struct {
-	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	BackgroundImage string             `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
-	ProfileImage    string             `json:"profileImageUrl" bson:"profileImageUrl"`
-	Name            string             `json:"name" bson:"name"`
-	Surname         string             `json:"surname" bson:"surname"`
-	Username        string             `json:"username" bson:"username"`
-	CreatedOn       time.Time          `json:"createdOn" bson:"createdOn"`
-	Followers       []Follower         `json:"followers" bson:"followers"`
-	Following       []Follower         `json:"following" bson:"following"`
+	ID              string     `json:"id,omitempty" bson:"_id,omitempty"`
+	BackgroundImage string     `json:"backgroundImageUrl" bson:"backgroundImageUrl"`
+	ProfileImage    string     `json:"profileImageUrl" bson:"profileImageUrl"`
+	Name            string     `json:"name" bson:"name"`
+	Surname         string     `json:"surname" bson:"surname"`
+	Username        string     `json:"username" bson:"username"`
+	CreatedOn       time.Time  `json:"createdOn" bson:"createdOn"`
+	Followers       []Follower `json:"followers" bson:"followers"`
+	Following       []Follower `json:"following" bson:"following"`
 }
 type Follower struct {
 	UserID   primitive.ObjectID `bson:"userId"`
@@ -153,8 +153,13 @@ func GetDesiredUsers(c *gin.Context) {
 }
 func Me(c *gin.Context) {
 	var foundUser UserData
-	decodedId, exists := c.Get("userId")
+	userIdRaw, exists := c.Get("userId")
 	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	decodedId, ok := userIdRaw.(string)
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -174,8 +179,6 @@ func CreateUser(c *gin.Context) {
 	keycloakUrl := "https://cache/auth/admin/realms/my-realm/users"
 	var newUser User
 	var keycloakUser keycloak.KeycloakUser
-	newUser.ID = primitive.NewObjectID()
-
 	token, err := keycloak.GetAdminToken()
 	if err != nil {
 		log.Printf("Failed to get admin token: %v", err)
@@ -188,10 +191,12 @@ func CreateUser(c *gin.Context) {
 	}
 	keycloakUser.Username = newUser.Username
 	keycloakUser.Password = newUser.Password
-	if err := keycloak.CreateKeycloakUser(token, keycloakUser, keycloakUrl); err != nil {
+	keycloakUserID, err := keycloak.CreateKeycloakUser(token, keycloakUser, keycloakUrl)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	newUser.ID = keycloakUserID
 	newUser.Password = password.HashPassword(newUser.Password)
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")

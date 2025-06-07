@@ -9,7 +9,7 @@ export default function Followers() {
   const pathname = usePathname();
   const username = pathname.split("/")[1];
   useEffect(() => {
-    axios.get(`${url}/${username}/followers`);
+    axios.get(`${url}/interactions/${username}/followers`);
   });
   return <></>;
 }

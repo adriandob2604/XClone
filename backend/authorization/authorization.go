@@ -112,10 +112,6 @@ func DecodeJWT(tokenString string) (string, error) {
 }
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.Path == "/users" || c.Request.URL.Path == "/" {
-			c.Next()
-			return
-		}
 		token, err := GetToken(c)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})

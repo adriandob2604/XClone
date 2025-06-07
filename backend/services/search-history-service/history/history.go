@@ -68,7 +68,7 @@ func GetHistory(c *gin.Context) {
 	}
 	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&history)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, history.Searches)

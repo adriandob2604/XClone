@@ -12,8 +12,10 @@ export const KeycloakProvider = ({ children }) => {
       const authenticated = await keycloak.init({
         onLoad: 'check-sso',
         checkLoginIframe: false,
-        silentCheckSsoRedirectUri: typeof window !== 'undefined' ? window.location.origin + '/silent-check-sso.html': undefined
+        promiseType: "native",
+        silentCheckSsoRedirectUri: `${window.location.origin}/check/silent-check-sso.html`
       });
+      console.log("Keycloak authenticated?", authenticated);
       setIsAuthenticated(authenticated);
     } catch (error) {
       console.error('Keycloak initialization error:', error);
@@ -21,7 +23,6 @@ export const KeycloakProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
   initKeycloak();
 }, []);
 

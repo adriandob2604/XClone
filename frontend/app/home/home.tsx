@@ -11,10 +11,16 @@ export function LeftSideBar(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [profileClicked, setProfileClicked] = useState<boolean>(false);
   const { keycloak, logout } = useContext(KeycloakContext);
+  const handleLogout = () => {
+    logout({
+      redirectUri: `${window.location.origin}`,
+    });
+  };
   useEffect(() => {
+    if (!keycloak.token) return;
     try {
       axios
-        .get(`${url}/me`, {
+        .get(`${url}/users/me`, {
           headers: {
             Authorization: `Bearer ${keycloak.token}`,
           },
@@ -25,7 +31,7 @@ export function LeftSideBar(): JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [keycloak.token]);
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -45,10 +51,10 @@ export function LeftSideBar(): JSX.Element {
             {/* <Image alt="notifications" src="/" /> */}
             <Link href="/notifications">Notifications</Link>
           </div>
-          <div className="section-element">
-            {/* <Image alt="messages" src="/" /> */}
+          {/* <div className="section-element">
+            <Image alt="messages" src="/" />
             <Link href="/messages">Messages</Link>
-          </div>
+          </div> */}
           <div className="section-element">
             {/* <Image alt="profile" src="/" /> */}
             <Link href={`/${userData?.username}`}>Profile</Link>
@@ -82,7 +88,9 @@ export function LeftSideBar(): JSX.Element {
             </div>
             {profileClicked && (
               <div>
-                <button onClick={logout}>Log out @{userData.username}</button>
+                <button onClick={handleLogout}>
+                  Log out @{userData.username}
+                </button>
               </div>
             )}
             {/* <Image alt="spread" src="/" /> */}
@@ -105,8 +113,12 @@ export function HomeMainPage() {
           <CreatePost />
         </div>
       </nav>
-      {activeTab === "forYou" && <GetPosts url={`${url}/for_you_posts`} />}
-      {activeTab === "following" && <GetPosts url={`${url}/following_posts`} />}
+      {activeTab === "forYou" && (
+        <GetPosts url={`${url}/posts/for_you_posts`} />
+      )}
+      {activeTab === "following" && (
+        <GetPosts url={`${url}/posts/following_posts`} />
+      )}
     </>
   );
 }

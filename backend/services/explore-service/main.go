@@ -28,7 +28,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(corsConfig.CORS()))
 	router.Use(authorization.AuthMiddleware())
-	router.GET("/explore", explore.GetExploreSearches)
+	router.GET("/", explore.GetExploreSearches)
 	router.Run(":5000")
 
 }

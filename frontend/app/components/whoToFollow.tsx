@@ -10,7 +10,7 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
     if (user) {
       axios
         .post(
-          `${url}/follow`,
+          `${url}/interactions/follow`,
           {
             id: user.id,
           },
@@ -32,7 +32,7 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
   };
   const unfollow = async (user: UserData, index: number) => {
     axios
-      .delete(`${url}/unfollow/${user.id}`, {
+      .delete(`${url}/interactions/unfollow/${user.id}`, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
         },

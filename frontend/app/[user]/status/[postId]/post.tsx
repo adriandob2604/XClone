@@ -84,19 +84,21 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 };
 
 export function CreatePost() {
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
   const [userData, setUserData] = useState<UserData | null>(null);
   const FILE_SIZE = 160 * 1024;
   useEffect(() => {
-    axios
-      .get(`${url}/me`, {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      })
-      .then((response) => setUserData(response.data))
-      .catch((err) => console.error(err));
-  }, []);
+    if (!loading && isAuthenticated) {
+      axios
+        .get(`${url}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        })
+        .then((response) => setUserData(response.data))
+        .catch((err) => console.error(err));
+    }
+  }, [loading, isAuthenticated]);
   const postForm = useFormik({
     initialValues: {
       text: "",
@@ -125,7 +127,7 @@ export function CreatePost() {
             },
           }),
           axios.post(
-            `${url}/notifications`,
+            `${url}/notifications/postNotification`,
             { notification: notificationMessage },
             {
               headers: {
@@ -178,32 +180,34 @@ export function CreatePost() {
 
 export function GetPosts({ url }: { url: string }) {
   const router = useRouter();
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
   const [postData, setPostData] = useState<PostData[]>([]);
   const [user, setUser] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   useEffect(() => {
-    try {
-      axios
-        .get(url, {
-          headers: {
-            Authorization: `Bearer ${keycloak.token}`,
-          },
-        })
-        .then((response) => {
-          if (response.data.posts) {
-            setPostData(response.data.posts);
-          }
-          if (response.data.user) {
-            setUser(response.data.user);
-          }
-        });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+    if (isAuthenticated && !loading) {
+      try {
+        axios
+          .get(url, {
+            headers: {
+              Authorization: `Bearer ${keycloak.token}`,
+            },
+          })
+          .then((response) => {
+            if (response.data.posts) {
+              setPostData(response.data.posts);
+            }
+            if (response.data.user) {
+              setUser(response.data.user);
+            }
+          });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [url]);
+  }, [url, isAuthenticated, loading]);
   if (isLoading) {
     return <></>;
   }

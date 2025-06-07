@@ -28,7 +28,7 @@ func GetNotifications(c *gin.Context) {
 	collection := db.Database.Collection("notifications")
 	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&notifications)
 	if err != nil {
-		c.JSON(http.StatusOK, []Notification{})
+		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, notifications)

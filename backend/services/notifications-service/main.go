@@ -27,7 +27,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(corsConfig.CORS()))
 	router.Use(authorization.AuthMiddleware())
-	router.GET("/notifications", notifications.GetNotifications)
-	router.POST("/notifications", notifications.PostNotification)
+	router.GET("/", notifications.GetNotifications)
+	router.POST("/postNotification", notifications.PostNotification)
 	router.Run(":5000")
 }

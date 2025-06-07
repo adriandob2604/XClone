@@ -27,10 +27,10 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(corsConfig.CORS()))
 	router.Use(authorization.AuthMiddleware())
-	router.GET("/history", history.GetHistory)
-	router.POST("/history", history.PostHistoryItem)
-	router.DELETE("/history/:id", history.DeleteHistoryItem)
-	router.DELETE("/history", history.DeleteHistory)
+	router.GET("/", history.GetHistory)
+	router.POST("/", history.PostHistoryItem)
+	router.DELETE("/:id", history.DeleteHistoryItem)
+	router.DELETE("/", history.DeleteHistory)
 	router.Run(":5000")
 
 }

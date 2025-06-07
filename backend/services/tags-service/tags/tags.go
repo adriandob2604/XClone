@@ -36,6 +36,10 @@ func TrendingTags(c *gin.Context) {
 		}
 		tags = append(tags, currentTag)
 	}
+	if len(tags) == 0 {
+		c.JSON(http.StatusNoContent, gin.H{"message": "No tags were found"})
+		return
+	}
 	sort.Slice(tags, func(i, j int) bool {
 		return len(tags[i].Posts) > len(tags[j].Posts)
 	})

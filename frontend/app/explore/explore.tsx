@@ -10,49 +10,41 @@ export default function Explore() {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
-  const [trending, SetTrending] = useState<TrendingData[]>([]);
+  const [trending, setTrending] = useState<TrendingData[]>([]);
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
   const router = useRouter();
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
 
   const handleTrendingPosts = (tag: string) => {
     params.set("q", tag);
     router.push(`/search?${params.toString()}`);
   };
   useEffect(() => {
-    axios
-      .get(`${url}/trending`, {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      })
-      .then((response) => {
-        if (response.status === 200 && response.data) {
-          SetTrending(response.data);
-        }
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setIsLoading(false));
-  }, []);
-  useEffect(() => {
-    axios
-      .get(`${url}/to_follow`, {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          setUsersToFollow(response.data);
-        }
-      })
-      .catch((err) => console.error(err));
-  }, []);
+    if (!loading && isAuthenticated) {
+      const headers = {
+        Authorization: `Bearer ${keycloak.token}`,
+      };
+
+      Promise.all([
+        axios.get(`${url}/tags`, { headers }),
+        axios.get(`${url}/users/to_follow`, { headers }),
+      ])
+        .then(([tagsResponse, toFollowResponse]) => {
+          if (tagsResponse.status === 200 && tagsResponse.data) {
+            setTrending(tagsResponse.data);
+          }
+          if (toFollowResponse.status === 200 && toFollowResponse.data) {
+            setUsersToFollow(toFollowResponse.data);
+          }
+        })
+        .catch((err) => console.error("error", err));
+    }
+  }, [loading, isAuthenticated]);
+
   if (isLoading) {
     return <p>loading...</p>;
   }
-  console.log(trending);
   return (
     <>
       <nav>

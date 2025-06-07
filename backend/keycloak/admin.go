@@ -86,7 +86,7 @@ func GetAdminToken() (string, error) {
 	return result.AccessToken, nil
 }
 
-func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) error {
+func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) (string, error) {
 	userData := map[string]interface{}{
 		"username": user.Username,
 		"email":    user.Email,
@@ -102,12 +102,12 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 
 	jsonData, err := json.Marshal(userData)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	req, err := http.NewRequest("POST", keycloakUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
-		return err
+		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -125,16 +125,23 @@ func CreateKeycloakUser(token string, user KeycloakUser, keycloakUrl string) err
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("failed to create user: %s", string(bodyBytes))
+		return "", fmt.Errorf("failed to create user: %s", string(bodyBytes))
 	}
 
-	return nil
+	location := resp.Header.Get("Location")
+	if location == "" {
+		return "", fmt.Errorf("no Location header in response")
+	}
+	parts := strings.Split(location, "/")
+	userID := parts[len(parts)-1]
+
+	return userID, nil
 }
 
 func GetKeycloakUserId(token string, username string) (string, error) {

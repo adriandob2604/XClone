@@ -3,10 +3,13 @@ import { JSX, useContext } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { KeycloakContext } from "../keycloakprovider";
+import { useRouter } from "next/navigation";
 export default function Root(): JSX.Element {
   const { login } = useContext(KeycloakContext);
   const handleKeycloakLogin = () => {
-    login();
+    login({
+      redirectUri: `${window.location.origin}/home`,
+    });
   };
   return (
     <main className="root-container">

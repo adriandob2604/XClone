@@ -13,18 +13,20 @@ export default function Searchbar() {
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
   const router = useRouter();
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
 
   const refetchHistory = async () => {
-    try {
-      const response = await axios.get(`${url}/history`, {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      });
-      setHistory(response.data);
-    } catch (err) {
-      console.error("Failed to fetch history:", err);
+    if (!loading && isAuthenticated) {
+      try {
+        const response = await axios.get(`${url}/search-history`, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        });
+        setHistory(response.data);
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
     }
   };
 
@@ -34,7 +36,7 @@ export default function Searchbar() {
 
   const handleDelete = async (item: SearchItem) => {
     try {
-      await axios.delete(`${url}/history/${item.id}`, {
+      await axios.delete(`${url}/search-history/${item.id}`, {
         headers: { Authorization: `Bearer ${keycloak.token}` },
       });
       refetchHistory();
@@ -45,7 +47,7 @@ export default function Searchbar() {
 
   const handleClearAll = async () => {
     try {
-      await axios.delete(`${url}/history`, {
+      await axios.delete(`${url}/search-history`, {
         headers: { Authorization: `Bearer ${keycloak.token}` },
       });
       refetchHistory();
@@ -64,7 +66,7 @@ export default function Searchbar() {
     onSubmit: async (values) => {
       try {
         await axios.post(
-          `${url}/history`,
+          `${url}/search-history`,
           { ...values },
           {
             headers: {

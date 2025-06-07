@@ -18,13 +18,14 @@ export default function Profile() {
   const { keycloak } = useContext(KeycloakContext);
 
   useEffect(() => {
+    if (!keycloak.token) return;
     const fetchData = async () => {
       try {
         const [profileResponse, postsResponse] = await Promise.all([
           axios.get(`${url}/users/${pathname}`, {
             headers: { Authorization: `Bearer ${keycloak.token}` },
           }),
-          axios.get(`${url}/${pathname}/posts`, {
+          axios.get(`${url}/posts/${pathname}`, {
             headers: { Authorization: `Bearer ${keycloak.token}` },
           }),
         ]);
@@ -41,7 +42,7 @@ export default function Profile() {
       }
     };
     fetchData();
-  }, [pathname]);
+  }, [pathname, keycloak.token]);
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -93,7 +94,7 @@ export default function Profile() {
             </footer>
           </nav>
           <main>
-            <GetPosts url={`${url}/${pathname}/posts`} />
+            <GetPosts url={`${url}/posts/${pathname}`} />
           </main>
           <footer>
             <header>Who to follow</header>

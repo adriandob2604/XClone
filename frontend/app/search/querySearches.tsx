@@ -18,34 +18,36 @@ export default function QuerySearches() {
   const [postData, setPostData] = useState<PostData[]>([]);
   const [noResults, setNoResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
 
   useEffect(() => {
     try {
-      axios
-        .get(`${url}/explore`, {
-          headers: {
-            Authorization: `Bearer ${keycloak.token}`,
-          },
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            if (response.data.users) {
-              setUserData(response.data.users);
+      if (!loading && isAuthenticated) {
+        axios
+          .get(`${url}/explore`, {
+            headers: {
+              Authorization: `Bearer ${keycloak.token}`,
+            },
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              if (response.data.users) {
+                setUserData(response.data.users);
+              }
+              if (response.data.posts) {
+                setPostData(response.data.posts);
+              }
+            } else {
+              setNoResults(response.data.message);
             }
-            if (response.data.posts) {
-              setPostData(response.data.posts);
-            }
-          } else {
-            setNoResults(response.data.message);
-          }
-        });
+          });
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, loading, isAuthenticated]);
   if (isLoading) {
     return <p>Loading...</p>;
   }
