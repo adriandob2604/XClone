@@ -86,13 +86,11 @@ export function LeftSideBar(): JSX.Element {
               </h4>
               <p>@{userData?.username}</p>
             </div>
-            {profileClicked && (
-              <div>
-                <button onClick={handleLogout}>
-                  Log out @{userData.username}
-                </button>
-              </div>
-            )}
+            <div>
+              <button onClick={handleLogout}>
+                Log out @{userData.username}
+              </button>
+            </div>
             {/* <Image alt="spread" src="/" /> */}
           </div>
         )}

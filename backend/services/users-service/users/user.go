@@ -61,6 +61,9 @@ type Follower struct {
 type FollowerData struct {
 	Username string `json:"username" bson:"username"`
 }
+type TokenRequest struct {
+	Token string `json:"token"`
+}
 
 func GetUser(c *gin.Context) {
 	var foundUser UserData
@@ -422,4 +425,13 @@ func ToFollow(c *gin.Context) {
 
 	}
 	c.JSON(http.StatusOK, usersToFollow)
+}
+func PostToken(c *gin.Context) {
+	var request TokenRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.SetCookie("keycloak-token", request.Token, 300, "/", "", true, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Successful token initialization"})
 }

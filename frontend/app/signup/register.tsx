@@ -1,5 +1,5 @@
 "use client";
-import { JSX, useContext, useState } from "react";
+import { JSX, useContext, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { RegisterDateInfo, url } from "@/app/utils";
@@ -10,7 +10,15 @@ import { KeycloakContext } from "../keycloakprovider";
 export default function Register(): JSX.Element {
   const router = useRouter();
   const [isClicked, setIsClicked] = useState<boolean>(false);
-  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  const { isAuthenticated } = useContext(KeycloakContext);
+  const [emailAvailable, setEmailAvailable] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/home");
+    }
+  }, [isAuthenticated]);
+
   const registerForm = useFormik({
     initialValues: {
       name: "",
@@ -43,7 +51,11 @@ export default function Register(): JSX.Element {
       month: Yup.string().required("Required"),
       day: Yup.number().required("Required"),
       year: Yup.number().required("Required"),
-      phoneNumber: Yup.string().max(9).required("Required"),
+      phoneNumber: Yup.string()
+        .matches(/^\d+$/, "Can contain only numbers")
+        .min(9)
+        .max(9)
+        .required("Required"),
       createdOn: Yup.date().required("Required"),
       birthDate: Yup.date().required("Required"),
     }),
@@ -71,90 +83,124 @@ export default function Register(): JSX.Element {
       }
     },
   });
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (registerForm.values.email) {
+        axios
+          .post(`${url}/users/check-email`, {
+            email: registerForm.values.email,
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              setEmailAvailable(true);
+            }
+          })
+          .catch(() => {
+            setEmailAvailable(false);
+          });
+      }
+    }, 800);
+
+    return () => clearTimeout(timeout);
+  }, [registerForm.values.email]);
+
   return (
     <form
-      className="account-detail-container"
+      className="create-account-container"
       onSubmit={registerForm.handleSubmit}
     >
       {!isClicked ? (
         <>
-          <div className="account-details">
-            <input
-              type="text"
-              placeholder="Name"
-              {...registerForm.getFieldProps("name")}
-            />
-            <input
-              type="text"
-              placeholder="E-mail"
-              {...registerForm.getFieldProps("email")}
-            />
-          </div>
-          <div className="birth-date-details">
-            <span>
-              <strong>Birth Date</strong>
+          <div className="items-container">
+            <button className="back-button" onClick={() => router.push("/")}>
+              x
+            </button>
+            <h2>Create an account</h2>
+            <div className="account-details">
+              <input
+                type="text"
+                placeholder="Name"
+                {...registerForm.getFieldProps("name")}
+              />
+              <input
+                type="text"
+                placeholder="E-mail"
+                {...registerForm.getFieldProps("email")}
+              />
+            </div>
+            <strong>Birth Date</strong>
+            <span className="create-account-information">
+              This information won't be visible for other users. Enter your age,
+              even if this account represents a company, a pet oraz any other
+              person or thing.
             </span>
-            <label>
-              <span>Month</span>
-              <select
-                name="month"
-                id="month"
-                onChange={registerForm.handleChange}
-                onBlur={registerForm.handleBlur}
-                value={registerForm.values.month}
-              >
-                {registerForm.values.year &&
-                  RegisterDateInfo(registerForm.values.year).months.map(
-                    (month: string) => <option key={month}>{month}</option>
+            <div className="birth-date-details">
+              <span></span>
+              <div className="birth-date-select">
+                <label>Month</label>
+                <select
+                  name="month"
+                  id="month"
+                  onChange={registerForm.handleChange}
+                  onBlur={registerForm.handleBlur}
+                  value={registerForm.values.month}
+                >
+                  {registerForm.values.year &&
+                    RegisterDateInfo(registerForm.values.year).months.map(
+                      (month: string) => <option key={month}>{month}</option>
+                    )}
+                </select>
+              </div>
+              <div className="birth-date-select">
+                <label>Day</label>
+                <select
+                  name="day"
+                  id="day"
+                  onChange={registerForm.handleChange}
+                  onBlur={registerForm.handleBlur}
+                  value={registerForm.values.day}
+                >
+                  {registerForm.values.month &&
+                    registerForm.values.year &&
+                    RegisterDateInfo(registerForm.values.year).days[
+                      registerForm.values.month
+                    ].map((day: number) => <option key={day}>{day}</option>)}
+                </select>
+              </div>
+              <div className="birth-date-select">
+                <label>Year</label>
+                <select
+                  name="year"
+                  id="year"
+                  onChange={registerForm.handleChange}
+                  onBlur={registerForm.handleBlur}
+                  value={registerForm.values.year}
+                >
+                  {RegisterDateInfo(registerForm.values.year).years.map(
+                    (year: number) => (
+                      <option key={year}>{year}</option>
+                    )
                   )}
-              </select>
-            </label>
-            <label>
-              <span>Day</span>
-              <select
-                name="day"
-                id="day"
-                onChange={registerForm.handleChange}
-                onBlur={registerForm.handleBlur}
-                value={registerForm.values.day}
-              >
-                {registerForm.values.month &&
-                  registerForm.values.year &&
-                  RegisterDateInfo(registerForm.values.year).days[
-                    registerForm.values.month
-                  ].map((day: number) => <option key={day}>{day}</option>)}
-              </select>
-            </label>
-            <label>
-              <span>Year</span>
-              <select
-                name="year"
-                id="year"
-                onChange={registerForm.handleChange}
-                onBlur={registerForm.handleBlur}
-                value={registerForm.values.year}
-              >
-                {RegisterDateInfo(registerForm.values.year).years.map(
-                  (year: number) => (
-                    <option key={year}>{year}</option>
-                  )
-                )}
-              </select>
-            </label>
+                </select>
+              </div>
+            </div>
+
+            <button
+              className="next-button"
+              type="button"
+              disabled={
+                !registerForm.values.name ||
+                !registerForm.values.email ||
+                !registerForm.values.year ||
+                !registerForm.values.month ||
+                !registerForm.values.day ||
+                !emailAvailable
+              }
+              onClick={() => setIsClicked((previous: boolean) => !previous)}
+            >
+              Next
+            </button>
           </div>
-          <button
-            type="button"
-            disabled={
-              !registerForm.values.name ||
-              !registerForm.values.email ||
-              !registerForm.values.year ||
-              !registerForm.values.month ||
-              !registerForm.values.day
-            }
-            onClick={() => setIsClicked((previous: boolean) => !previous)}
-          >
-            Next
-          </button>
         </>
       ) : (
         <>

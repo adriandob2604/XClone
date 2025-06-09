@@ -36,5 +36,6 @@ func main() {
 	router.PUT("/me/background-picture", users.UploadBackgroundPicture)
 	router.DELETE("/:id", users.DeleteUser)
 	router.GET("/to_follow", users.ToFollow)
+	router.POST("/token", users.PostToken)
 	router.Run(":5000")
 }

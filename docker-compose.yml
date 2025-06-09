@@ -89,6 +89,8 @@ services:
     container_name: explore-service
     ports:
       - "5001:5000"
+    volumes:
+      - ./backend/services/explore-service:/app/services/explore-service
 
   interaction-service:
     <<: *backend_service
@@ -96,6 +98,8 @@ services:
     container_name: interaction-service
     ports:
       - "5002:5000"
+    volumes:
+      - ./backend/services/interaction-service:/app/services/interaction-service
 
   notifications-service:
     <<: *backend_service
@@ -103,31 +107,40 @@ services:
     container_name: notifications-service
     ports:
       - "5003:5000"
+    volumes:
+      - ./backend/services/notifications-service:/app/services/notifications-service
   post-service:
     <<: *backend_service
     command: ["./post-services"]
     container_name: post-service
     ports:
       - "5004:5000"
+    volumes:
+      - ./backend/services/post-service:/app/services/post-service
   search-history-service:
     <<: *backend_service
     command: ["./search-history-services"]
     container_name: search-history-service
     ports:
       - "5005:5000"
+    volumes:
+      - ./backend/services/search-history-service:/app/services/explore-service
   tags-service:
     <<: *backend_service
     command: ["./tags-services"]
     container_name: tags-service
     ports:
       - "5006:5000"
+    volumes:
+      - ./backend/services/tags-service:/app/services/tags-service
   users-service:
     <<: *backend_service
     command: ["./users-services"]
     container_name: users-service
     ports:
       - "5007:5000"
-
+    volumes:
+      - ./backend/services/users-service:/app/services/users-service
 volumes:
   nginx_cache:
   pg_data:

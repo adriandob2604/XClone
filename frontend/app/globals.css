@@ -1,65 +1,150 @@
-/* body {
-  background-color: black;
-  color: white;
-  margin: 0;
-  padding: 0;
-  font-size: xx-large;
-  font-family: Arial, Helvetica, sans-serif;
-  letter-spacing: -0.5px;
-}
-
-a {
-  text-decoration: none;
-}
-
 .root-container {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
   align-items: center;
+  width: 100vw;
   height: 100vh;
-}
-.root-container .create-account-container {
-  width: 800px;
-  margin: -4%;
-}
-.root-container .create-account-container .create-login-container {
-  font-size: large;
   font-weight: bold;
-  width: 256px;
+  font-size: x-large;
 }
-.root-container .create-account-container .create-login-container .register-container {
+.root-container .account-container {
   display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  margin-top: 16px;
-  padding: 8px 32px 8px 32px;
-  border-radius: 32px;
-  background-color: white;
-  color: black;
-  font-size: smaller;
+  flex-direction: column;
+  gap: 16px;
 }
-.root-container .create-account-container .create-login-container a.register-container:nth-child(4) {
-  background-color: rgba(0, 166, 255, 0.875);
+.root-container .account-container h1 {
+  width: 64%;
+}
+.root-container .account-container a, .root-container .account-container button {
+  padding: 0.6rem;
+  margin-right: 64%;
+  border-radius: 16px;
+  text-align: center;
+  text-decoration: none;
+}
+.root-container .account-container a {
+  background-color: rgb(29, 155, 240);
   color: white;
+  margin-top: 2%;
+  padding: 0.36rem;
+  font-weight: bold;
+  font-size: large;
 }
-.root-container .create-account-container .create-login-container a.register-container:nth-child(6) {
-  background-color: black;
-  color: rgba(0, 166, 255, 0.875);
-  border: 0.5px solid gray;
+.root-container .account-container .reminder {
+  margin-top: 48px;
 }
-.root-container .create-account-container .create-login-container .or-container {
+.root-container .account-container button {
+  background-color: rgba(0, 0, 0, 0);
+  color: rgb(29, 155, 240);
+  border: 1px solid rgb(66, 66, 66);
+}
+
+.section-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+}
+
+.create-account-container {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-top: 8px;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(46, 46, 46, 0.09);
+}
+.create-account-container .items-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  width: 24vw;
+  height: 64vh;
+  padding-left: 4.8rem;
+  gap: 4px;
+  background-color: black;
+}
+.create-account-container .items-container .back-button {
+  position: absolute;
+  right: 62%;
+  top: 20%;
+  color: white;
+  border: none;
+}
+.create-account-container .items-container h2 {
+  margin-top: 16%;
+}
+.create-account-container .items-container .create-account-information {
+  color: gray;
   font-size: small;
 }
-.root-container .create-account-container .create-login-container .or-container .separator {
-  border: outset 1px rgb(70, 69, 69);
-  width: 48%;
-  margin-left: 4%;
-  margin-right: 4%;
+.create-account-container .items-container strong {
+  margin-top: 8%;
 }
-.root-container .create-account-container .create-login-container .reminder {
-  margin-top: 16%;
-}# sourceMappingURL=globals.css.map */
+.create-account-container .items-container input {
+  background-color: black;
+  border: solid 1px lightgrey;
+  border-radius: 4px;
+  color: white;
+}
+.create-account-container .items-container input:focus {
+  border: solid 2px rgb(29, 155, 240);
+  outline: none;
+}
+.create-account-container .items-container input {
+  display: flex;
+  width: 16vw;
+  padding: 0.8rem;
+  margin-top: 4%;
+}
+.create-account-container .items-container .birth-date-details {
+  display: flex;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4%;
+  margin-right: 16px;
+  gap: 4%;
+  width: 64%;
+  padding: 2%;
+  border: solid 1px gray;
+  border-radius: 4px;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select label {
+  color: gray;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select select {
+  background-color: black;
+  color: white;
+  border: none;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select select:focus {
+  border: none;
+  outline: none;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select option {
+  background-color: black;
+  color: white;
+}
+.create-account-container .items-container .birth-date-details .birth-date-select:focus {
+  border: solid 2px rgb(29, 155, 240);
+  outline: none;
+}
+.create-account-container .items-container .next-button {
+  width: 16vw;
+  padding: 0.6rem;
+  border-radius: 8px;
+  margin-top: 4%;
+  margin-left: 4%;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: black;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  color: white;
+}
+
+/*# sourceMappingURL=globals.css.map */

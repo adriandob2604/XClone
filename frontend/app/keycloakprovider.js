@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState, useCallback } from 'react';
 import keycloak from './lib/keycloak';
+import axios from 'axios';
 
 export const KeycloakContext = createContext();
 
@@ -17,6 +18,9 @@ export const KeycloakProvider = ({ children }) => {
       });
       console.log("Keycloak authenticated?", authenticated);
       setIsAuthenticated(authenticated);
+      if (authenticated && keycloak.token) {
+        axios.post(`${url}/users/token`, {token: keycloak.token}).then((response) => console.log(response.status)).catch((err) => console.error(err))
+      }
     } catch (error) {
       console.error('Keycloak initialization error:', error);
     } finally {
@@ -26,15 +30,18 @@ export const KeycloakProvider = ({ children }) => {
   initKeycloak();
 }, []);
 
-  const login = useCallback(() => {
+  const login = useCallback((options) => {
     if (!isAuthenticated) {
-      keycloak.login();
+      keycloak.login(options);
     }
   }, [isAuthenticated]);
 
-  const logout = useCallback(() => {
-    keycloak.logout();
-  }, []);
+  const logout = useCallback((options) => {
+    if (isAuthenticated){
+      keycloak.logout(options);
+
+    }
+  }, [isAuthenticated]);
 
   return (
     <KeycloakContext.Provider

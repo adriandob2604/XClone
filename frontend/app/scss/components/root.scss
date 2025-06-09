@@ -1,0 +1,44 @@
+.root-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    font-weight: bold;
+    font-size: x-large;
+
+    .account-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            h1 {
+                width: 64%;
+            }
+            a,button {
+                padding: 0.6rem;
+                margin-right: 64%;
+                border-radius: 16px;
+                text-align: center;
+                text-decoration: none;
+                
+            }
+            a {
+                background-color: rgb(29,155,240);
+                color: white;
+                margin-top: 2%;
+                padding: 0.36rem;
+                font-weight: bold;
+                font-size: large;
+            }
+            .reminder {
+                margin-top: 48px;
+            }
+            button {
+                background-color: rgb(0,0,0,0);
+                color: rgb(29, 155, 240);
+                border: 1px solid rgb(66, 66, 66);
+            }
+         
+    }
+    
+}

@@ -1,0 +1,24 @@
+.root-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+.root-container .account-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 4px;
+}
+.root-container .account-container a, .root-container .account-container button {
+  padding: 16px;
+}
+.root-container .account-container a {
+  background-color: rgb(29, 155, 240);
+}
+.root-container .account-container button {
+  background-color: rgba(0, 0, 0, 0);
+  color: rgb(29, 155, 240);
+  border: 1px solid rgb(66, 66, 66);
+}/*# sourceMappingURL=root.css.map */

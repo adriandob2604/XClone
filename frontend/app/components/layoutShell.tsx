@@ -36,7 +36,7 @@ export default function LayoutShell({
   }, [isAuthenticated, pathname, loading]);
 
   return (
-    <main className="root-container">
+    <main>
       <section>{!isHomePage && showHome && <LeftSideBar />}</section>
       <nav>
         {!isHomePage && showSearchBar && pathname === "/explore" && (
