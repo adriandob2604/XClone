@@ -5,6 +5,7 @@ import axios from "axios";
 import { CreatePost, GetPosts } from "../[user]/status/[postId]/post";
 import { UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
+import Image from "next/image";
 export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -36,66 +37,89 @@ export function LeftSideBar(): JSX.Element {
     return <p>Loading...</p>;
   }
   return (
-    <>
-      <section className="section-container">
-        <div className="section-routes">
-          <div className="section-element">
-            {/* <Image alt="Home" src="/" /> */}
-            <Link href="/home">Home</Link>
-          </div>
-          <div className="section-element">
-            {/* <Image alt="explore" src="/" /> */}
-            <Link href="/explore">Explore</Link>
-          </div>
-          <div className="section-element">
-            {/* <Image alt="notifications" src="/" /> */}
-            <Link href="/notifications">Notifications</Link>
-          </div>
-          {/* <div className="section-element">
+    <section className="section-container">
+      <div className="section-routes">
+        <div className="section-element">
+          {/* <Image alt="Home" src="/" /> */}
+          <Link href="/home">Home</Link>
+        </div>
+        <div className="section-element">
+          {/* <Image alt="explore" src="/" /> */}
+          <Link href="/explore">Explore</Link>
+        </div>
+        <div className="section-element">
+          {/* <Image alt="notifications" src="/" /> */}
+          <Link href="/notifications">Notifications</Link>
+        </div>
+        {/* <div className="section-element">
             <Image alt="messages" src="/" />
             <Link href="/messages">Messages</Link>
           </div> */}
-          <div className="section-element">
-            {/* <Image alt="profile" src="/" /> */}
-            <Link href={`/${userData?.username}`}>Profile</Link>
-          </div>
-          <div className="section-element">
-            {/* <Image alt="settings" src="/" /> */}
-            <button onClick={() => setMoreClicked((previous) => !previous)}>
-              More
-            </button>
-            {moreClicked && (
-              <Link href="/settings/account">Settings and privacy</Link>
-            )}
-          </div>
+        <div className="section-element">
+          {/* <Image alt="profile" src="/" /> */}
+          <Link href={`/${userData?.username}`}>Profile</Link>
         </div>
-        <div className="section-post">
-          <Link href={"/compose/post"}>Post</Link>
-        </div>
-        {userData && (
-          <div className="section-profile">
-            {/* <Image alt="profile-pic" src="/" /> */}
-            <div
-              onClick={() => setProfileClicked(true)}
-              onBlur={() => setProfileClicked(false)}
-              role="button"
-              tabIndex={0}
-            >
-              <h4>
-                {userData?.name} {userData?.surname}
-              </h4>
-              <p>@{userData?.username}</p>
+        <div className="section-element">
+          {keycloak.hasRealmRole("admin") && (
+            <div className="section-element">
+              <Link href={"/admin"}>Admin Panel</Link>
             </div>
+          )}
+        </div>
+        {/* <div className="section-element">
+          <Image alt="settings" src="/" />
+          <button onClick={() => setMoreClicked((previous) => !previous)}>
+            More
+          </button>
+          {moreClicked && (
+            <Link href="/settings/account">Settings and privacy</Link>
+          )}
+        </div> */}
+      </div>
+      <div className="section-post">
+        <Link href={"/compose/post"}>Post</Link>
+      </div>
+      {userData && (
+        <div className="section-profile">
+          {userData.profileImageUrl && (
+            <Image
+              alt="profile-pic"
+              src={`${userData.profileImageUrl}`}
+              width={32}
+              height={32}
+            />
+          )}
+          {!userData.profileImageUrl && (
+            <Image
+              alt="default-profile-pic"
+              src="/pfp.jpg"
+              width={32}
+              height={32}
+            />
+          )}
+
+          <div
+            onClick={() => setProfileClicked(true)}
+            onBlur={() => setProfileClicked(false)}
+            role="button"
+            tabIndex={0}
+            className="username-section"
+          >
             <div>
-              <button onClick={handleLogout}>
-                Log out @{userData.username}
-              </button>
+              {userData?.name} {userData?.surname}
             </div>
-            {/* <Image alt="spread" src="/" /> */}
+            <p>@{userData?.username}</p>
           </div>
-        )}
-      </section>
-    </>
+          <div>
+            <strong>...</strong>
+          </div>
+          <div>
+            <button onClick={handleLogout}>Log out @{userData.username}</button>
+          </div>
+          {/* <Image alt="spread" src="/" /> */}
+        </div>
+      )}
+    </section>
   );
 }
 export function HomeMainPage() {

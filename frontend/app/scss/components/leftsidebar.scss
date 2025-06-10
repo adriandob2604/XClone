@@ -1,4 +1,62 @@
 .section-container {
     display: flex;
     flex-direction: column;
+    font-weight: 500;
+    height: 100%;
+    gap: 32px;
+    margin: 4%;
+    border: solid 2px lightgrey;
+
+    .section-routes {
+        font-weight: bold;
+        .section-element {
+            border-radius: 16px;
+            padding: 0.8rem;
+            width: fit-content;
+            height: 8%;
+            &:hover {
+                background-color: rgb(81, 80, 80);
+                transition: background-color 0.4s ease 0.04s;
+            }
+            a,button {
+                color: white;
+                text-decoration: none;
+                border: none;
+            }
+        }
+    }
+    .section-post {
+        a {
+            text-decoration: none;
+            background-color: white;
+            border-radius: 16px;
+            padding: 0.8rem;
+            padding-right: 4.8rem;
+            padding-left: 4.8rem;
+            font-weight: bold;
+            font-size: small;
+        }
+    }
+    .section-profile {
+        display: flex;
+        gap: 4px;
+        margin: 4px;
+        &:hover {
+                background-color: rgb(81, 80, 80);
+                border-radius: 16px;
+                transition: background-color 0.4s ease 0.04s;
+            }
+        width: fit-content;
+        .username-section {
+            div,p {
+                font-weight: bold;
+            }
+            p {
+                color: grey;
+                font-size: small;
+            }
+            
+        }
+
+    }
 }

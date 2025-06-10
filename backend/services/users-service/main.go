@@ -27,6 +27,8 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(corsConfig.CORS()))
 	router.POST("/", users.CreateUser)
+	router.POST("/token", users.PostToken)
+	router.POST("/check-email", users.CheckEmail)
 	router.Use(authorization.AuthMiddleware())
 	router.GET("/", users.GetDesiredUsers)
 	router.GET("/:username", users.GetUser)
@@ -36,6 +38,5 @@ func main() {
 	router.PUT("/me/background-picture", users.UploadBackgroundPicture)
 	router.DELETE("/:id", users.DeleteUser)
 	router.GET("/to_follow", users.ToFollow)
-	router.POST("/token", users.PostToken)
 	router.Run(":5000")
 }

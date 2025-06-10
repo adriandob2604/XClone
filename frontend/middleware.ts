@@ -7,6 +7,7 @@ export function middleware(request: NextRequest) {
   if (token) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
+  
 
   return NextResponse.next();
 }

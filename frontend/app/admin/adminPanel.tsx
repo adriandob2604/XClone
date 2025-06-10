@@ -1,5 +1,6 @@
+"use client";
 import { useContext, useEffect, useState } from "react";
-import { letters, UserData } from "../utils";
+import { letters, UserData, url } from "../utils";
 import axios from "axios";
 import { KeycloakContext } from "../keycloakprovider";
 import { UserComponent } from "../components/userComponent";
@@ -15,7 +16,7 @@ export default function AdminPanel() {
   useEffect(() => {
     if (keycloak.hasRealmRole("admin")) {
       axios
-        .get("/users", {
+        .get(`${url}/users`, {
           headers: {
             Authorization: `Bearer ${keycloak.token}`,
           },

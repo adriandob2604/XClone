@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -182,6 +183,7 @@ func CreateUser(c *gin.Context) {
 	keycloakUrl := "https://cache/auth/admin/realms/my-realm/users"
 	var newUser User
 	var keycloakUser keycloak.KeycloakUser
+	var foundUser UserData
 	token, err := keycloak.GetAdminToken()
 	if err != nil {
 		log.Printf("Failed to get admin token: %v", err)
@@ -190,6 +192,17 @@ func CreateUser(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+	err = collection.FindOne(ctx, bson.M{"email": newUser.Email}).Decode(&foundUser)
+	if err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Email already used"})
+		return
+	}
+	if err != mongo.ErrNoDocuments {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	keycloakUser.Username = newUser.Username
@@ -201,8 +214,6 @@ func CreateUser(c *gin.Context) {
 	}
 	newUser.ID = keycloakUserID
 	newUser.Password = password.HashPassword(newUser.Password)
-	ctx := c.Request.Context()
-	collection := db.Database.Collection("users")
 	_, err = collection.InsertOne(ctx, newUser)
 
 	if err != nil {
@@ -434,4 +445,26 @@ func PostToken(c *gin.Context) {
 	}
 	c.SetCookie("keycloak-token", request.Token, 300, "/", "", true, true)
 	c.JSON(http.StatusOK, gin.H{"message": "Successful token initialization"})
+}
+func CheckEmail(c *gin.Context) {
+	var foundUser UserData
+	var requestedEmail struct {
+		Email string `json:"email"`
+	}
+	if err := c.ShouldBindJSON(&requestedEmail); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Email already used"})
+		return
+	}
+	ctx := c.Request.Context()
+	collection := db.Database.Collection("users")
+	err := collection.FindOne(ctx, bson.M{"email": requestedEmail.Email}).Decode(&foundUser)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusOK, gin.H{"message": "Email is available"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusConflict, gin.H{"message": "Email already used"})
 }
