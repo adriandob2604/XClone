@@ -1,10 +1,10 @@
 apiVersion: v1
-kind: Pod
+kind: Deployment
 metadata:
   name: frontend
 spec:
   containers:
     - name: frontend
-      image: node:18-alpine
+      image: adrian/frontend:latest
       ports:
         - containerPort: 3000

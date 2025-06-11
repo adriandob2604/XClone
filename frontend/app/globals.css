@@ -189,6 +189,26 @@
   margin-left: 4%;
 }
 
+.homepage-post-container {
+  border: solid 2px white;
+}
+.homepage-post-container input {
+  background-color: black;
+  color: grey;
+  border: none;
+}
+.homepage-post-container .post-button {
+  background-color: white;
+  border-radius: 16px;
+  padding-right: 0.8rem;
+  padding-left: 0.8rem;
+  height: 1.6rem;
+}
+.homepage-post-container .post-button:disabled {
+  color: black;
+  background-color: rgba(211, 211, 211, 0.68);
+}
+
 body {
   font-family: "Roboto", sans-serif;
   background-color: black;

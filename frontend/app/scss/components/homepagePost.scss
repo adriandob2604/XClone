@@ -1,0 +1,21 @@
+.homepage-post-container {
+    border: solid 2px white;
+    input {
+        background-color: black;
+        color: grey;
+        border: none;
+        &:focus {
+        }
+    }
+    .post-button {
+        background-color: white;
+        border-radius: 16px;
+        padding-right: 0.8rem;
+        padding-left: 0.8rem;
+        height: 1.6rem;
+        &:disabled {
+            color:black;
+            background-color: rgba(211, 211, 211, 0.68);
+        }
+    }
+}

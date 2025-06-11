@@ -8,6 +8,7 @@ import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import { KeycloakContext } from "@/app/keycloakprovider";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export const PostComponent: React.FC<PostComponentProps> = ({
   users,
@@ -149,12 +150,31 @@ export function CreatePost() {
   });
   return (
     <>
-      <form onSubmit={postForm.handleSubmit}>
-        <header>
+      <form
+        onSubmit={postForm.handleSubmit}
+        className="homepage-post-container"
+      >
+        {/* <header>
           <Link href={"/home"}>Back</Link>
-        </header>
+        </header> */}
         <div>
-          <div>Image</div>
+          {userData?.profileImageUrl && (
+            <Image
+              alt="profile-pic"
+              src={`${userData.profileImageUrl}`}
+              width={32}
+              height={32}
+            />
+          )}
+          {!userData?.profileImageUrl && (
+            <Image
+              alt="default-profile-pic"
+              src="/pfp.jpg"
+              width={32}
+              height={32}
+            />
+          )}
+
           <input
             type="text"
             placeholder="What is happening?!"
@@ -172,7 +192,13 @@ export function CreatePost() {
             }
           />
         </footer>
-        <button type="submit">Post</button>
+        <button
+          type="submit"
+          className="post-button"
+          disabled={!postForm.values.text}
+        >
+          Post
+        </button>
       </form>
     </>
   );

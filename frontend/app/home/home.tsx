@@ -126,7 +126,7 @@ export function HomeMainPage() {
   const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
   return (
     <>
-      <nav>
+      <nav className="home-navigation">
         <div>
           <button onClick={() => setActiveTab("forYou")}>For you</button>
           <button onClick={() => setActiveTab("following")}>Following</button>

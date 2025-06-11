@@ -1,8 +1,5 @@
 #!/bin/sh
 
-set -e
-. /etc/nginx/ssl_conf.env
-
 mkdir -p /etc/nginx/ssl/certs
 
 openssl req -x509 -nodes -days 365 \
