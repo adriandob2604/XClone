@@ -38,17 +38,23 @@ export function LeftSideBar(): JSX.Element {
   }
   return (
     <section className="section-container">
+      <h1 className="clone-container">XClone</h1>
       <div className="section-routes">
         <div className="section-element">
-          {/* <Image alt="Home" src="/" /> */}
+          <Image alt="home" src="/home.PNG" width={32} height={32} />
           <Link href="/home">Home</Link>
         </div>
         <div className="section-element">
-          {/* <Image alt="explore" src="/" /> */}
+          <Image alt="explore" src="/explore.PNG" width={32} height={32} />
           <Link href="/explore">Explore</Link>
         </div>
         <div className="section-element">
-          {/* <Image alt="notifications" src="/" /> */}
+          <Image
+            alt="notifications"
+            src="/notifications.PNG"
+            width={32}
+            height={32}
+          />
           <Link href="/notifications">Notifications</Link>
         </div>
         {/* <div className="section-element">
@@ -56,7 +62,7 @@ export function LeftSideBar(): JSX.Element {
             <Link href="/messages">Messages</Link>
           </div> */}
         <div className="section-element">
-          {/* <Image alt="profile" src="/" /> */}
+          <Image alt="profile" src="/profile.PNG" width={32} height={32} />
           <Link href={`/${userData?.username}`}>Profile</Link>
         </div>
         <div className="section-element">
@@ -75,9 +81,9 @@ export function LeftSideBar(): JSX.Element {
             <Link href="/settings/account">Settings and privacy</Link>
           )}
         </div> */}
-      </div>
-      <div className="section-post">
-        <Link href={"/compose/post"}>Post</Link>
+        <div className="section-post">
+          <Link href={"/compose/post"}>Post</Link>
+        </div>
       </div>
       {userData && (
         <div className="section-profile">
@@ -127,7 +133,7 @@ export function HomeMainPage() {
   return (
     <>
       <nav className="home-navigation">
-        <div>
+        <div className="for-you-following-container">
           <button onClick={() => setActiveTab("forYou")}>For you</button>
           <button onClick={() => setActiveTab("following")}>Following</button>
         </div>

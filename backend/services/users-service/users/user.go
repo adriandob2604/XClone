@@ -422,7 +422,7 @@ func ToFollow(c *gin.Context) {
 		return
 	}
 	if len(users) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No users to follow!"})
+		c.JSON(http.StatusNoContent, gin.H{"error": "No users to follow!"})
 		return
 	}
 

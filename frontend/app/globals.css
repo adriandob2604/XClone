@@ -39,23 +39,35 @@
   border: 1px solid rgb(66, 66, 66);
 }
 
-.section-container {
+.clone-container {
   display: flex;
   flex-direction: column;
-  font-weight: 500;
+  align-items: center;
+  font-size: xx-large;
+  width: 64%;
+}
+
+.section-container {
+  display: flex;
+  position: static;
+  flex-direction: column;
   height: 100%;
-  gap: 32px;
-  margin: 4%;
-  border: solid 2px lightgrey;
+  justify-content: center;
+  font-size: x-large;
+  border-right: solid 0.5px rgb(90, 90, 90);
 }
 .section-container .section-routes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   font-weight: bold;
 }
 .section-container .section-routes .section-element {
   border-radius: 16px;
-  padding: 0.8rem;
+  padding: 1.6rem;
   width: fit-content;
-  height: 8%;
 }
 .section-container .section-routes .section-element:hover {
   background-color: rgb(81, 80, 80);
@@ -79,7 +91,6 @@
 .section-container .section-profile {
   display: flex;
   gap: 4px;
-  margin: 4px;
   width: fit-content;
 }
 .section-container .section-profile:hover {
@@ -190,23 +201,78 @@
 }
 
 .homepage-post-container {
-  border: solid 2px white;
+  display: flex;
+  gap: 16px;
+  border: solid 0.5px grey;
+  height: 16vh;
+  justify-content: center;
+}
+.homepage-post-container img {
+  border-radius: 16px;
 }
 .homepage-post-container input {
   background-color: black;
   color: grey;
   border: none;
+  width: 12vw;
+}
+.homepage-post-container .media-container {
+  display: flex;
+}
+.homepage-post-container .media-container input {
+  display: none;
+}
+.homepage-post-container .post-input-container {
+  display: flex;
+  padding: 1.6rem;
+}
+.homepage-post-container .post-input-container img, .homepage-post-container .post-input-container input {
+  font-size: x-large;
+  align-self: center;
 }
 .homepage-post-container .post-button {
+  align-self: flex-end;
   background-color: white;
   border-radius: 16px;
-  padding-right: 0.8rem;
-  padding-left: 0.8rem;
-  height: 1.6rem;
+  padding-right: 1.2rem;
+  padding-left: 1.2rem;
+  height: 2.4rem;
 }
 .homepage-post-container .post-button:disabled {
   color: black;
   background-color: rgba(211, 211, 211, 0.68);
+}
+
+.home-navigation {
+  border-right: solid 0.5px gray;
+}
+.home-navigation .for-you-following-container {
+  display: flex;
+  align-items: center;
+}
+.home-navigation .for-you-following-container button {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  background-color: black;
+  color: white;
+  font-size: large;
+  font-weight: bold;
+}
+.home-navigation .for-you-following-container button:hover {
+  background-color: rgb(23, 23, 23);
+}
+
+.trending-container {
+  display: flex;
+  flex-direction: column;
+  border: solid 0.5px grey;
+}
+
+.main-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
 }
 
 body {

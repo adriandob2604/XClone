@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { FollowUserProps, UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
 import axios from "axios";
@@ -63,3 +63,31 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
     );
   }
 };
+export function WhoToFollow() {
+  const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  useEffect(() => {
+    if (keycloak.token && isAuthenticated) {
+      axios
+        .get("/users/to_follow", {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            setUsersToFollow(response.data);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [keycloak.token, isAuthenticated]);
+  if (usersToFollow.length === 0) {
+    return <p>No users to follow!</p>;
+  }
+  return (
+    <>
+      <FollowUser users={usersToFollow} />
+    </>
+  );
+}

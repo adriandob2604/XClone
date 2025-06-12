@@ -4,7 +4,7 @@ import axios from "axios";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 import { KeycloakContext } from "@/app/keycloakprovider";
 import { useRouter } from "next/navigation";
@@ -87,7 +87,13 @@ export const PostComponent: React.FC<PostComponentProps> = ({
 export function CreatePost() {
   const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const FILE_SIZE = 160 * 1024;
+  const handleImageClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
   useEffect(() => {
     if (!loading && isAuthenticated) {
       axios
@@ -154,10 +160,7 @@ export function CreatePost() {
         onSubmit={postForm.handleSubmit}
         className="homepage-post-container"
       >
-        {/* <header>
-          <Link href={"/home"}>Back</Link>
-        </header> */}
-        <div>
+        <div className="post-input-container">
           {userData?.profileImageUrl && (
             <Image
               alt="profile-pic"
@@ -180,18 +183,27 @@ export function CreatePost() {
             placeholder="What is happening?!"
             {...postForm.getFieldProps("text")}
           />
+          <footer className="media-container">
+            <Image
+              alt="media-photo"
+              src="/media_twitter.PNG"
+              width={16}
+              height={16}
+              onClick={handleImageClick}
+              style={{ cursor: "pointer" }}
+            ></Image>
+            <input
+              type="file"
+              name="Media"
+              accept="image/*, video/*"
+              multiple={true}
+              ref={fileInputRef}
+              onChange={(event) =>
+                postForm.setFieldValue("file", event.currentTarget.files?.[0])
+              }
+            />
+          </footer>
         </div>
-        <footer>
-          <input
-            type="file"
-            name="Media"
-            accept="image/*, video/*"
-            multiple={true}
-            onChange={(event) =>
-              postForm.setFieldValue("file", event.currentTarget.files?.[0])
-            }
-          />
-        </footer>
         <button
           type="submit"
           className="post-button"

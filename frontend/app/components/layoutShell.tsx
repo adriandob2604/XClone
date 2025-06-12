@@ -1,12 +1,13 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { LeftSideBar } from "@/app/home/home";
-// import WhoToFollow from "@/app/components/whoToFollow";
+import { WhoToFollow } from "@/app/components/whoToFollow";
 import Trending from "@/app/components/trending";
 import Searchbar from "../search/searchbar";
 import { useContext, useEffect, useLayoutEffect } from "react";
 import { KeycloakContext } from "../keycloakprovider";
 import { useRouter } from "next/navigation";
+import { HomeMainPage } from "@/app/home/home";
 
 export default function LayoutShell({
   children,
@@ -36,8 +37,11 @@ export default function LayoutShell({
   }, [isAuthenticated, pathname, loading]);
 
   return (
-    <main>
+    <main className="main-container">
       <section>{!isHomePage && showHome && <LeftSideBar />}</section>
+      <main>
+        <HomeMainPage />
+      </main>
       <nav>
         {!isHomePage && showSearchBar && pathname === "/explore" && (
           <Searchbar />
@@ -48,7 +52,7 @@ export default function LayoutShell({
           showSearchBar &&
           pathname !== "/explore" &&
           showHome && <Searchbar />}
-        {/* {!isHomePage && showWhoToFollow && <WhoToFollow />} */}
+        {!isHomePage && showWhoToFollow && <WhoToFollow />}
         {!isHomePage && showTrending && <Trending />}
       </aside>
       <div>{children}</div>

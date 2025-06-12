@@ -1,0 +1,62 @@
+.homepage-post-container {
+    display: flex;
+    gap: 16px;
+    border: solid 0.5px grey;
+    height: 16vh;
+    justify-content: center;
+    img {
+        border-radius: 16px;
+    }
+    input {
+        background-color: black;
+        color: grey;
+        border: none;
+        width: 12vw;
+       
+    }
+    .media-container {
+        display: flex;
+        input {
+            display: none;
+        }
+    }
+    .post-input-container {
+        display: flex;
+        padding: 1.6rem;
+        img,input {
+            font-size: x-large;
+            align-self: center;
+        }
+    }
+    .post-button {
+        align-self: flex-end;
+        background-color: white;
+        border-radius: 16px;
+        padding-right: 1.2rem;
+        padding-left: 1.2rem;
+        height: 2.4rem;
+        &:disabled {
+            color:black;
+            background-color: rgba(211, 211, 211, 0.68);
+        }
+    }
+}
+.home-navigation {
+    border-right: solid 0.5px gray;
+    .for-you-following-container {
+        display: flex;
+        align-items: center;
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            background-color: black;
+            color: white;
+            font-size: large;
+            font-weight: bold;
+            &:hover {
+                background-color: rgb(23, 23, 23);
+            }
+        }
+    }
+}

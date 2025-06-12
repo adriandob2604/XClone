@@ -1,19 +1,29 @@
-.section-container {
+.clone-container {
     display: flex;
     flex-direction: column;
-    font-weight: 500;
+    align-items: center;
+    font-size: xx-large;
+    width: 64%;
+}
+.section-container {
+    display: flex;
+    position: static;
+    flex-direction: column;
     height: 100%;
-    gap: 32px;
-    margin: 4%;
-    border: solid 2px lightgrey;
-
+    justify-content: center;
+    font-size: x-large;
+    border-right: solid 0.5px rgb(90, 90, 90);
     .section-routes {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 100%;
         font-weight: bold;
         .section-element {
             border-radius: 16px;
-            padding: 0.8rem;
+            padding: 1.6rem;
             width: fit-content;
-            height: 8%;
             &:hover {
                 background-color: rgb(81, 80, 80);
                 transition: background-color 0.4s ease 0.04s;
@@ -40,7 +50,6 @@
     .section-profile {
         display: flex;
         gap: 4px;
-        margin: 4px;
         &:hover {
                 background-color: rgb(81, 80, 80);
                 border-radius: 16px;
@@ -50,7 +59,7 @@
         .username-section {
             div,p {
                 font-weight: bold;
-            }
+            } 
             p {
                 color: grey;
                 font-size: small;
