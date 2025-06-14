@@ -1,0 +1,25 @@
+.user-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    .account-details {
+        display: flex;
+        padding: 0.8rem;
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+    }
+    button {
+        border: none;
+    }
+    .follow-button {
+        background-color: white;
+        color: black;
+        border-radius: 8px;
+        padding: 0.4rem;
+        padding-right: 0.6rem;
+        padding-left: 0.6rem;
+    }
+}

@@ -7,7 +7,6 @@ import (
 	"github.com/adriandob2604/XClone/backend/services/users-service/users"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type FollowerId struct {
@@ -27,23 +26,18 @@ func FollowUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	userObjectId, err := primitive.ObjectIDFromHex(userId.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 	if decodedId == userId.ID {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "You cannot follow yourself"})
 		return
 	}
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
-	err = collection.FindOne(ctx, bson.M{"_id": userObjectId}).Decode(&foundUser)
+	err := collection.FindOne(ctx, bson.M{"_id": userId.ID}).Decode(&foundUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	follower.UserID = userObjectId
+	follower.UserID = userId.ID
 	follower.Username = foundUser.Username
 
 	update := bson.M{

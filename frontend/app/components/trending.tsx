@@ -30,7 +30,9 @@ export default function Trending() {
   };
   return (
     <div className="trending-container">
-      <h2>What's happening</h2>
+      <h3>
+        <strong>What's happening</strong>
+      </h3>
       {trending.length > 0 && (
         <div>
           {trending.map((tag: TrendingData) => (

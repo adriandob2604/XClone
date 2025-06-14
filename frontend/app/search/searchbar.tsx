@@ -1,6 +1,6 @@
 "use client";
 import { useFormik } from "formik";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useContext, useEffect, useState } from "react";
 import * as Yup from "yup";
 import axios from "axios";
@@ -9,6 +9,7 @@ import { KeycloakContext } from "../keycloakprovider";
 
 export default function Searchbar() {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const params = new URLSearchParams(searchParams.toString());
   const [clicked, setClicked] = useState<boolean>(false);
   const [history, setHistory] = useState<SearchItem[]>([]);
@@ -16,7 +17,7 @@ export default function Searchbar() {
   const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
 
   const refetchHistory = async () => {
-    if (!loading && isAuthenticated) {
+    if (!loading && isAuthenticated && keycloak.token) {
       try {
         const response = await axios.get(`${url}/search-history`, {
           headers: {
@@ -67,7 +68,7 @@ export default function Searchbar() {
       try {
         await axios.post(
           `${url}/search-history`,
-          { ...values },
+          { input: values.input },
           {
             headers: {
               Authorization: `Bearer ${keycloak.token}`,
@@ -84,7 +85,7 @@ export default function Searchbar() {
   });
 
   return (
-    <form onSubmit={searchForm.handleSubmit}>
+    <form onSubmit={searchForm.handleSubmit} className="search-bar-container">
       <div>
         <input
           type="text"
@@ -94,8 +95,8 @@ export default function Searchbar() {
         />
       </div>
 
-      {clicked && history.length === 0 && (
-        <div>
+      {clicked && history.length === 0 && pathname !== "/explore" && (
+        <div className="empty-search-bar">
           <p>Try searching for people, lists, or keywords</p>
         </div>
       )}

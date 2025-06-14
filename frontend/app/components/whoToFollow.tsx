@@ -46,22 +46,30 @@ export const FollowUser: React.FC<FollowUserProps> = ({ users }) => {
       })
       .catch((err) => console.error(err));
   };
-  if (users.length > 0) {
-    return (
-      <>
-        {users.map((user: UserData, index: number) => (
-          <UserComponent key={user.id} user={user}>
-            {!isFollowing[index] && (
-              <button onClick={() => follow(user, index)}>Follow</button>
-            )}
-            {isFollowing[index] && (
-              <button onClick={() => unfollow(user, index)}>Following</button>
-            )}
-          </UserComponent>
-        ))}
-      </>
-    );
-  }
+  return (
+    <>
+      {users.map((user: UserData, index: number) => (
+        <UserComponent key={user.id} user={user}>
+          {!isFollowing[index] && (
+            <button
+              className="follow-button"
+              onClick={() => follow(user, index)}
+            >
+              Follow
+            </button>
+          )}
+          {isFollowing[index] && (
+            <button
+              className="unfollow-button"
+              onClick={() => unfollow(user, index)}
+            >
+              Following
+            </button>
+          )}
+        </UserComponent>
+      ))}
+    </>
+  );
 };
 export function WhoToFollow() {
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
@@ -69,7 +77,7 @@ export function WhoToFollow() {
   useEffect(() => {
     if (keycloak.token && isAuthenticated) {
       axios
-        .get("/users/to_follow", {
+        .get(`${url}/users/to_follow`, {
           headers: {
             Authorization: `Bearer ${keycloak.token}`,
           },
@@ -82,12 +90,13 @@ export function WhoToFollow() {
         .catch((err) => console.error(err));
     }
   }, [keycloak.token, isAuthenticated]);
-  if (usersToFollow.length === 0) {
-    return <p>No users to follow!</p>;
-  }
   return (
-    <>
-      <FollowUser users={usersToFollow} />
-    </>
+    <aside className="users-to-follow-container">
+      <h3>
+        <strong>Who to follow</strong>
+      </h3>
+      {usersToFollow.length === 0 && <p>No users to follow!</p>}
+      {usersToFollow.length !== 0 && <FollowUser users={usersToFollow} />}
+    </aside>
   );
 }

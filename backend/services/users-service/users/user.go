@@ -56,8 +56,8 @@ type UserData struct {
 	Following       []Follower `json:"following" bson:"following"`
 }
 type Follower struct {
-	UserID   primitive.ObjectID `bson:"userId"`
-	Username string             `json:"username" bson:"username"`
+	UserID   string `bson:"userId"`
+	Username string `json:"username" bson:"username"`
 }
 type FollowerData struct {
 	Username string `json:"username" bson:"username"`
@@ -81,7 +81,11 @@ func GetUser(c *gin.Context) {
 
 	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "User doesn't exist"})
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusNoContent, gin.H{"message": "User doesn't exist"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -157,13 +161,8 @@ func GetDesiredUsers(c *gin.Context) {
 }
 func Me(c *gin.Context) {
 	var foundUser UserData
-	userIdRaw, exists := c.Get("userId")
+	decodedId, exists := c.Get("userId")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-	decodedId, ok := userIdRaw.(string)
-	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -467,4 +466,8 @@ func CheckEmail(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusConflict, gin.H{"message": "Email already used"})
+}
+func Logout(c *gin.Context) {
+	c.SetCookie("keycloak-token", "", -1, "/", "localhost", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Cookie deleted"})
 }

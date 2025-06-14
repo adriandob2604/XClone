@@ -9,6 +9,7 @@ import (
 	"github.com/adriandob2604/XClone/backend/services/users-service/users"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetExploreSearches(c *gin.Context) {
@@ -40,7 +41,11 @@ func GetExploreSearches(c *gin.Context) {
 	}
 	postCursor, err := postsCollection.Find(ctx, bson.M{"text": bson.M{"$regex": "^" + query, "$options": "i"}})
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer postCursor.Close(ctx)
@@ -55,7 +60,7 @@ func GetExploreSearches(c *gin.Context) {
 	}
 	if len(foundPosts) == 0 && len(foundUsers) == 0 {
 		message := fmt.Sprintf("No results for: %s", query)
-		c.JSON(http.StatusNotFound, gin.H{"message": message})
+		c.JSON(http.StatusNoContent, gin.H{"message": message})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": foundUsers, "posts": foundPosts, "query": query})

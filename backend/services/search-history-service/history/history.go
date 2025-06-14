@@ -11,8 +11,8 @@ import (
 )
 
 type History struct {
-	UserId   primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Searches []Search           `json:"searches" bson:"searches"`
+	UserId   string   `json:"id,omitempty" bson:"_id,omitempty"`
+	Searches []Search `json:"searches" bson:"searches"`
 }
 
 type Search struct {
@@ -47,7 +47,7 @@ func PostHistoryItem(c *gin.Context) {
 
 	err := collection.FindOneAndUpdate(
 		ctx,
-		bson.M{"_id": decodedId.(primitive.ObjectID)},
+		bson.M{"_id": decodedId},
 		update,
 		opts,
 	).Decode(&updatedHistory)

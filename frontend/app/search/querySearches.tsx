@@ -6,7 +6,10 @@ import Searchbar from "./searchbar";
 import axios from "axios";
 import { PostData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
-import { GetPosts, PostComponent } from "../[user]/status/[postId]/post";
+import {
+  GetPosts,
+  PostComponent,
+} from "../profile/[user]/status/[postId]/post";
 import { KeycloakContext } from "../keycloakprovider";
 
 export default function QuerySearches() {

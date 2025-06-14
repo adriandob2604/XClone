@@ -44,7 +44,7 @@
   flex-direction: column;
   align-items: center;
   font-size: xx-large;
-  width: 64%;
+  width: 16vw;
 }
 
 .section-container {
@@ -60,6 +60,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-evenly;
   width: 100%;
   height: 100%;
   font-weight: bold;
@@ -70,7 +71,7 @@
   width: fit-content;
 }
 .section-container .section-routes .section-element:hover {
-  background-color: rgb(81, 80, 80);
+  background-color: rgb(31, 31, 31);
   transition: background-color 0.4s ease 0.04s;
 }
 .section-container .section-routes .section-element a, .section-container .section-routes .section-element button {
@@ -90,11 +91,10 @@
 }
 .section-container .section-profile {
   display: flex;
-  gap: 4px;
   width: fit-content;
 }
 .section-container .section-profile:hover {
-  background-color: rgb(81, 80, 80);
+  background-color: rgb(31, 31, 31);
   border-radius: 16px;
   transition: background-color 0.4s ease 0.04s;
 }
@@ -201,51 +201,53 @@
 }
 
 .homepage-post-container {
-  display: flex;
-  gap: 16px;
-  border: solid 0.5px grey;
-  height: 16vh;
-  justify-content: center;
-}
-.homepage-post-container img {
-  border-radius: 16px;
+  border-top: solid 0.5px rgb(90, 90, 90);
+  border-bottom: solid 0.5px rgb(90, 90, 90);
+  padding: 1.6rem;
 }
 .homepage-post-container input {
   background-color: black;
   color: grey;
   border: none;
-  width: 12vw;
 }
 .homepage-post-container .media-container {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.6rem;
 }
 .homepage-post-container .media-container input {
   display: none;
 }
 .homepage-post-container .post-input-container {
   display: flex;
-  padding: 1.6rem;
+  align-items: center;
+  padding: 0.8rem;
+  border-bottom: solid 0.5px rgb(90, 90, 90);
 }
 .homepage-post-container .post-input-container img, .homepage-post-container .post-input-container input {
   font-size: x-large;
-  align-self: center;
+  outline: none;
+}
+.homepage-post-container .post-input-container .input-profile-pic {
+  border-radius: 64px;
 }
 .homepage-post-container .post-button {
-  align-self: flex-end;
   background-color: white;
-  border-radius: 16px;
+  border: none;
+  font-size: large;
+  font-weight: bold;
+  border-radius: 24px;
   padding-right: 1.2rem;
   padding-left: 1.2rem;
-  height: 2.4rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
 }
 .homepage-post-container .post-button:disabled {
   color: black;
   background-color: rgba(211, 211, 211, 0.68);
 }
 
-.home-navigation {
-  border-right: solid 0.5px gray;
-}
 .home-navigation .for-you-following-container {
   display: flex;
   align-items: center;
@@ -266,13 +268,159 @@
 .trending-container {
   display: flex;
   flex-direction: column;
-  border: solid 0.5px grey;
+  border: solid 0.5px rgb(90, 90, 90);
+  border-radius: 0.4rem;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
 }
 
 .main-container {
   display: flex;
   width: 100vw;
   height: 100vh;
+  justify-content: center;
+}
+.main-container .aside-container {
+  position: static;
+  width: 16vw;
+  margin-left: 1.6rem;
+}
+.main-container .main-page {
+  border-right: solid 0.5px rgb(90, 90, 90);
+  width: 32vw;
+  height: 100vh;
+}
+
+.user-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.user-container .account-details {
+  display: flex;
+  padding: 0.8rem;
+}
+.user-container .account-details .user-info {
+  display: flex;
+  flex-direction: column;
+}
+.user-container button {
+  border: none;
+}
+.user-container .follow-button {
+  background-color: white;
+  color: black;
+  border-radius: 8px;
+  padding: 0.4rem;
+  padding-right: 0.6rem;
+  padding-left: 0.6rem;
+}
+
+.users-to-follow-container {
+  border: solid 0.5px rgb(90, 90, 90);
+  border-radius: 0.4rem;
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+}
+
+.search-bar-container .empty-search-bar {
+  display: flex;
+  align-items: flex-end;
+  border: solid 0.5px rgb(90, 90, 90);
+  border-top: none;
+  box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
+  padding: 0.4rem;
+  border-radius: 0.8rem;
+  color: gray;
+  font-size: small;
+}
+.search-bar-container input {
+  background-color: black;
+  color: white;
+  border: 0.5 solid gray;
+  padding-top: 0.8rem;
+  padding-left: 0.4rem;
+  padding-bottom: 0.8rem;
+  width: 96%;
+  border-radius: 1.6rem;
+}
+.search-bar-container input::placeholder {
+  color: white;
+  padding-left: 1.6rem;
+}
+
+.notifications-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.notifications-container .notifications-navigation {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 0.8rem;
+  padding-right: 0.8rem;
+}
+.notifications-container .notifications-navigation .clear-notifications-button {
+  background-color: black;
+  color: rgb(220, 34, 34);
+  border: none;
+  font-weight: bold;
+}
+.notifications-container .notifications-navigation .clear-notifications-button:hover {
+  background-color: rgb(31, 31, 31);
+  border-radius: 1.6rem;
+  transition: background-color 0.4s ease 0.04s;
+}
+.notifications-container .no-notifications-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 16%;
+}
+.notifications-container .no-notifications-container p {
+  width: 64%;
+}
+.notifications-container .all-notifications-container {
+  display: flex;
+  justify-content: center;
+  border-bottom: solid 0.5px rgb(90, 90, 90);
+}
+.notifications-container .all-notifications-container a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  font-size: large;
+  border-bottom: solid 4px rgb(56, 56, 255);
+  border-radius: 0.5px;
+  padding: 0.8rem;
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+}
+.profile-container .profile-navbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.profile-container .profile-navbar a {
+  text-decoration: none;
+  color: white;
+  font-size: large;
+}
+.profile-container .profile-navbar .name-post-count-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profile-container .profile-navbar .name-post-count-container p {
+  color: gray;
+}
+.profile-container .profile-navbar .background-profile-image div {
+  background-color: gray;
+  width: 32vw;
+  height: 32vh;
 }
 
 body {

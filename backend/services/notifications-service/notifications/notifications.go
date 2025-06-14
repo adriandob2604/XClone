@@ -12,8 +12,9 @@ import (
 )
 
 type Notification struct {
-	NotificationId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Notification   time.Time          `json:"notification" bson:"notification"`
+	NotificationID primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID         string             `json:"userId" bson:"userId"`
+	Notification   string             `json:"notification" bson:"notification"`
 	CreatedOn      time.Time          `json:"createdOn" bson:"createdOn"`
 }
 
@@ -34,7 +35,7 @@ func GetNotifications(c *gin.Context) {
 	c.JSON(http.StatusOK, notifications)
 }
 func PostNotification(c *gin.Context) {
-	var foundUser users.User
+	var foundUser users.UserData
 	var notification Notification
 	decodedId, exists := c.Get("userId")
 	if !exists {
@@ -47,18 +48,29 @@ func PostNotification(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	collection := db.Database.Collection("users")
-	err := collection.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
+	notifications := db.Database.Collection("notifications")
+	users := db.Database.Collection("users")
+	err := users.FindOne(ctx, bson.M{"_id": decodedId}).Decode(&foundUser)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	notification.NotificationId = primitive.NewObjectID()
+	notification.NotificationID = primitive.NewObjectID()
 	notification.CreatedOn = time.Now()
+	if len(foundUser.Followers) == 0 {
+		c.JSON(http.StatusNoContent, gin.H{"message": "No followers yet!"})
+		return
+	}
 	for _, follower := range foundUser.Followers {
-		result := collection.FindOneAndUpdate(ctx, bson.M{"_id": follower.UserID}, bson.M{"$push": bson.M{"notifications": notification}})
-		if result.Err() != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
+		notification := Notification{
+			NotificationID: primitive.NewObjectID(),
+			UserID:         follower.UserID,
+			Notification:   notification.Notification,
+			CreatedOn:      time.Now(),
+		}
+		_, err := notifications.InsertOne(ctx, notification)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}

@@ -10,7 +10,11 @@ export type UserData = {
   surname: string;
   username: string;
   profileImageUrl: string;
+  backgroundImageUrl: string;
+  description: string;
   createdOn: Date;
+  followers: string[]
+  following: string[]
 };
 
 export type UserComponentProps = {
@@ -24,11 +28,12 @@ export type CommentData = {
   likes: number;
   createdAt: Date
 };
+
 export type PostData = {
   id: string
   userId: string;
   text: string;
-  file: File;
+  fileUrl: string;
   comments: CommentData[];
   tags: string[];
   likes: number;

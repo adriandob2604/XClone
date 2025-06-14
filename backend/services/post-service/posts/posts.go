@@ -3,7 +3,9 @@ package posts
 import (
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/adriandob2604/XClone/backend/db"
@@ -13,12 +15,13 @@ import (
 	storage_go "github.com/supabase-community/storage-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Post struct {
 	PostID    primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
+	UserID    string             `json:"userId" bson:"userId"`
 	Text      string             `json:"text" bson:"text"`
 	FileUrl   string             `json:"fileUrl" bson:"fileUrl"`
 	Comments  []Comment          `json:"comments" bson:"comments"`
@@ -34,7 +37,7 @@ type PostUpdateInput struct {
 
 type Comment struct {
 	CommentId primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	UserId    primitive.ObjectID `json:"userId" bson:"userId"`
+	UserId    string             `json:"userId" bson:"userId"`
 	Comment   string             `json:"comment" bson:"comment"`
 	Likes     int64              `json:"likes" bson:"likes"`
 	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
@@ -50,48 +53,53 @@ func CreatePost(c *gin.Context) {
 		return
 	}
 
-	postFile, err := c.FormFile("postFile")
-	if err != nil {
+	post.UserID = decodedId.(string)
+	post.CreatedOn = time.Now()
+	post.Text = c.PostForm("text")
+
+	var postFile *multipart.FileHeader
+	var err error
+	postFile, err = c.FormFile("postFile")
+	if err != nil && err != http.ErrMissingFile {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	openedPostFile, err := postFile.Open()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer openedPostFile.Close()
+	if postFile != nil {
+		fileReader, err := postFile.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer fileReader.Close()
 
-	buf := make([]byte, 512)
-	_, err = openedPostFile.Read(buf)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot read file"})
-		return
-	}
-	contentType := http.DetectContentType(buf)
+		buf := make([]byte, 512)
+		_, err = fileReader.Read(buf)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot read file"})
+			return
+		}
+		contentType := http.DetectContentType(buf)
+		_, _ = fileReader.Seek(0, io.SeekStart)
 
-	_, err = openedPostFile.Seek(0, io.SeekStart)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot reset file reader"})
-		return
-	}
+		postFilePath := fmt.Sprintf("uploads/%s/%s", post.PostID.Hex(), postFile.Filename)
 
-	post.UserID = decodedId.(primitive.ObjectID)
-	post.CreatedOn = time.Now()
-	post.Text = c.PostForm("text")
-	postFilePath := fmt.Sprintf("uploads/%s/%s", post.PostID.Hex(), postFile.Filename)
+		_, err = supabase.SupabaseClient.Storage.UploadFile("posts", postFilePath, fileReader, storage_go.FileOptions{
+			ContentType: &contentType,
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
-	_, err = supabase.SupabaseClient.Storage.UploadFile("posts", postFilePath, openedPostFile, storage_go.FileOptions{
-		ContentType: &contentType,
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		postUrl := supabase.SupabaseClient.Storage.GetPublicUrl("posts", postFilePath)
+		post.FileUrl = postUrl.SignedURL
 	}
 
-	postUrl := supabase.SupabaseClient.Storage.GetPublicUrl("posts", postFilePath)
-	post.FileUrl = postUrl.SignedURL
+	if strings.TrimSpace(post.Text) == "" && post.FileUrl == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Post must contain text or file"})
+		return
+	}
 
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("posts")
@@ -108,9 +116,15 @@ func CreatePost(c *gin.Context) {
 func GetPost(c *gin.Context) {
 	var foundPost Post
 	var foundUser users.UserData
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
 	ctx := c.Request.Context()
 	posts := db.Database.Collection("posts")
 	users := db.Database.Collection("users")
+
 	postId, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -191,6 +205,11 @@ func DeletePost(c *gin.Context) {
 func GetPosts(c *gin.Context) {
 	var foundPosts []Post
 	var foundUser users.UserData
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
 	ctx := c.Request.Context()
 	users := db.Database.Collection("users")
 	username := c.Param("username")
@@ -202,7 +221,11 @@ func GetPosts(c *gin.Context) {
 	posts := db.Database.Collection("posts")
 	cursor, err := posts.Find(ctx, bson.M{"username": username})
 	if err != nil {
-		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer cursor.Close(ctx)
@@ -210,17 +233,25 @@ func GetPosts(c *gin.Context) {
 		var currentPost Post
 		err := cursor.Decode(&currentPost)
 		if err != nil {
-			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+			if err == mongo.ErrNoDocuments {
+				c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		foundPosts = append(foundPosts, currentPost)
 	}
-
+	if len(foundPosts) == 0 {
+		c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"posts": foundPosts, "user": foundUser})
 }
 func GetFollowingPosts(c *gin.Context) {
 	var foundUser users.User
 	var foundPosts []Post
+
 	ctx := c.Request.Context()
 	users := db.Database.Collection("users")
 	posts := db.Database.Collection("posts")
@@ -261,9 +292,17 @@ func GetFollowingPosts(c *gin.Context) {
 }
 func GetForYouPosts(c *gin.Context) {
 	var foundPosts []Post
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := startOfDay.Add(24 * time.Hour)
 	ctx := c.Request.Context()
 	posts := db.Database.Collection("posts")
-	cursor, err := posts.Find(ctx, bson.M{"createdOn": time.Now()})
+	cursor, err := posts.Find(ctx, bson.M{"createdOn": bson.M{"$gte": startOfDay, "$lt": endOfDay}})
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -287,6 +326,11 @@ func GetForYouPosts(c *gin.Context) {
 
 func FindPostsWithTag(c *gin.Context) {
 	var posts []Post
+	_, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
 	tagName := c.Param("tag")
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("posts")

@@ -1,15 +1,24 @@
 "use client";
-import { JSX, useContext } from "react";
+import { JSX, useContext, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { KeycloakContext } from "../keycloakprovider";
+import { useRouter } from "next/navigation";
 export default function Root(): JSX.Element {
-  const { login } = useContext(KeycloakContext);
+  const { login, isAuthenticated } = useContext(KeycloakContext);
+  const router = useRouter();
   const handleKeycloakLogin = () => {
     login({
       redirectUri: `${window.location.origin}/home`,
     });
   };
+  useEffect(() => {
+    if (isAuthenticated) {
+      setTimeout(() => {
+        router.push("/home");
+      }, 1000);
+    }
+  }, [isAuthenticated]);
   return (
     <main className="root-container">
       <div className="logo-container">

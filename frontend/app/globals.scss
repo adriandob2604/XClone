@@ -4,6 +4,11 @@
 @use "scss/components/homepage.scss";
 @use "scss/components/trending.scss";
 @use "scss/components/main.scss";
+@use "scss/components/user.scss";
+@use "scss/components/followUsers.scss";
+@use "scss/components/searchbar.scss";
+@use "scss/components/notifications.scss";
+@use "scss/components/profile.scss";
 body {
     font-family: 'Roboto', sans-serif;
     background-color: black;

@@ -2,12 +2,14 @@ import React, { createContext, useEffect, useState, useCallback } from 'react';
 import keycloak from './lib/keycloak';
 import axios from 'axios';
 import { url } from "@/app/utils";
+import { useRouter } from 'next/navigation';
 
 export const KeycloakContext = createContext();
 
 export const KeycloakProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter()
   useEffect(() => {
   const initKeycloak = async () => {
     try {
@@ -17,10 +19,10 @@ export const KeycloakProvider = ({ children }) => {
         promiseType: "native",
         silentCheckSsoRedirectUri: `${window.location.origin}/check/silent-check-sso.html`
       });
-      console.log("Keycloak authenticated?", authenticated);
       setIsAuthenticated(authenticated);
-      if (authenticated && keycloak.token) {
-        axios.post(`${url}/users/token`, {token: keycloak.token}).then((response) => console.log(response.status)).catch((err) => console.error(err))
+      if (keycloak.token) {
+        axios.post(`${url}/users/token`, {token: keycloak.token}).then((response) => console.info(response.status)).catch((err) => console.error(err))
+        
       }
     } catch (error) {
       console.error('Keycloak initialization error:', error);

@@ -1,14 +1,12 @@
 "use client";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { TrendingData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
 import { KeycloakContext } from "../keycloakprovider";
+import Searchbar from "../search/searchbar";
 export default function Explore() {
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [usersToFollow, setUsersToFollow] = useState<UserData[]>([]);
   const [trending, setTrending] = useState<TrendingData[]>([]);
   const searchParams = useSearchParams();
@@ -21,7 +19,7 @@ export default function Explore() {
     router.push(`/search?${params.toString()}`);
   };
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!loading && isAuthenticated && keycloak.token) {
       const headers = {
         Authorization: `Bearer ${keycloak.token}`,
       };
@@ -41,35 +39,27 @@ export default function Explore() {
         .catch((err) => console.error("error", err));
     }
   }, [loading, isAuthenticated]);
-
-  if (isLoading) {
-    return <p>loading...</p>;
-  }
   return (
     <>
-      <nav>
-        <Link href={`/settings/${pathname}`}>Settings</Link>
-      </nav>
       <main>
-        <div>
-          {trending.length !== 0 && (
-            <>
-              {trending.map((news: TrendingData) => (
-                <div key={news.tag}>
-                  <p>Trending</p>
-                  <button
-                    type="button"
-                    onClick={() => handleTrendingPosts(news.tag)}
-                  >
-                    {news.tag}
-                  </button>
-                  <p>{news.posts.length} posts</p>
-                </div>
-              ))}
-            </>
-          )}
-          {trending.length === 0 && <p>No trending posts!</p>}
-        </div>
+        <Searchbar />
+        {trending.length !== 0 && (
+          <>
+            {trending.map((news: TrendingData) => (
+              <div key={news.tag}>
+                <p>Trending</p>
+                <button
+                  type="button"
+                  onClick={() => handleTrendingPosts(news.tag)}
+                >
+                  {news.tag}
+                </button>
+                <p>{news.posts.length} posts</p>
+              </div>
+            ))}
+          </>
+        )}
+        {trending.length === 0 && <p>No trending posts!</p>}
         <FollowUser users={usersToFollow} />
       </main>
     </>
