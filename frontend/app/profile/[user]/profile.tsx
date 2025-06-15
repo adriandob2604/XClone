@@ -8,6 +8,7 @@ import { PostComponent } from "./status/[postId]/post";
 import { KeycloakContext } from "../../keycloakprovider";
 import Image from "next/image";
 import { WhoToFollow } from "@/app/components/whoToFollow";
+import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -16,6 +17,7 @@ export default function Profile() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { keycloak, isAuthenticated } = useContext(KeycloakContext);
+  const router = useRouter();
 
   useEffect(() => {
     if (keycloak.token && isAuthenticated) {
@@ -49,15 +51,18 @@ export default function Profile() {
       {userData && (
         <main className="profile-container">
           <nav className="profile-navbar">
+            <button onClick={() => router.push("/home")}>
+              <strong>Back</strong>
+            </button>
             <div className="name-post-count-container">
-              <div>
+              <div className="post-name-container">
                 {userData?.name} {userData?.surname}
               </div>
-              <p>{posts?.length} posts</p>
+              <div className="post-count-container">{posts?.length} posts</div>
             </div>
           </nav>
           <div className="background-profile-image">
-            {userData.backgroundImageUrl && (
+            {userData.backgroundImageUrl !== "" && (
               <Image
                 src={userData.backgroundImageUrl}
                 alt="user-background"
@@ -65,56 +70,55 @@ export default function Profile() {
                 height={64}
               />
             )}
-            {!userData.backgroundImageUrl && <div></div>}
+            {userData.backgroundImageUrl === "" && <div></div>}
           </div>
-          <div>
-            <div className="profile-picture-and-edit-container">
-              {userData.profileImageUrl && (
-                <Image
-                  src={userData.profileImageUrl}
-                  alt="user-profile"
-                  width={64}
-                  height={64}
-                />
-              )}
-              {!userData.profileImageUrl && (
-                <Image
-                  alt="default-profile"
-                  src={"/pfp.jpg"}
-                  width={64}
-                  height={64}
-                />
-              )}
-              {isOwn && <Link href={"/settings/profile"}>Edit profile</Link>}
-            </div>
-            <div className="user-profile-info">
-              <div>
+          <div className="profile-picture-and-edit-container">
+            {userData.profileImageUrl && (
+              <Image
+                src={userData.profileImageUrl}
+                alt="user-profile"
+                width={128}
+                height={128}
+              />
+            )}
+            {!userData.profileImageUrl && (
+              <Image
+                alt="default-profile"
+                src="/default-pic.jpg"
+                width={128}
+                height={128}
+              />
+            )}
+            {isOwn && <Link href={"/settings/profile"}>Edit profile</Link>}
+          </div>
+          <div className="user-profile-info">
+            <div className="user-credentials">
+              <h3>
                 <strong>
                   {userData?.name} {userData?.surname}
                 </strong>
-              </div>
+              </h3>
               <p>@{userData?.username}</p>
-              <p>{userData?.description}</p>
-              <p>Joined {new Date(userData.createdOn).toLocaleDateString()}</p>
             </div>
-            <div>
-              <Link href={`/profile/${pathname}/following`}>
-                {userData.following?.length} Following
-              </Link>
-              <Link href={`/profile/${pathname}/followers`}>
-                {userData.followers?.length} Followers
-              </Link>
-            </div>
+            {userData?.description && <p>{userData.description}</p>}
+            {!userData?.description && <p>No description</p>}
+            <p>Joined {new Date(userData.createdOn).toLocaleDateString()}</p>
+          </div>
+          <div className="followers-container">
+            <div>{userData.following?.length}</div>
+            <Link href={`/profile/${pathname}/following`}>Following</Link>
+            <div>{userData.followers?.length}</div>
+            <Link href={`/profile/${pathname}/followers`}>Followers</Link>
           </div>
           <main>
-            <PostComponent users={[userData]} postData={posts} />
+            <PostComponent postData={posts} />
           </main>
-          <footer>
+          <footer className="profile-footer-container">
             <WhoToFollow />
           </footer>
         </main>
       )}
-      {!userData && (
+      {/* {!userData && (
         <>
           <header>
             <Link href={"/home"}>Back</Link>
@@ -122,7 +126,7 @@ export default function Profile() {
           </header>
           <main>
             <nav>Background</nav>
-            {/* <Image></Image> */}
+            <Image></Image>
             <div>
               <strong>@{pathname.toString()}</strong>
             </div>
@@ -132,7 +136,7 @@ export default function Profile() {
             <p>Try searching for another.</p>
           </footer>
         </>
-      )}
+      )} */}
     </main>
   );
 }

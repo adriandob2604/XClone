@@ -72,7 +72,6 @@ export type Notification = {
   createdOn: Date
 }
 export type PostComponentProps = {
-  users: UserData[];
   postData: PostData[]
 }
 export type FollowUserProps = {

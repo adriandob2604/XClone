@@ -249,7 +249,7 @@ func GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"posts": foundPosts, "user": foundUser})
 }
 func GetFollowingPosts(c *gin.Context) {
-	var foundUser users.User
+	var foundUser users.UserData
 	var foundPosts []Post
 
 	ctx := c.Request.Context()
@@ -266,26 +266,32 @@ func GetFollowingPosts(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	for _, userId := range foundUser.Following {
-		cursor, err := posts.Find(ctx, bson.M{"userId": userId, "createdOn": time.Now()})
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := startOfDay.Add(24 * time.Hour)
+	for _, follower := range foundUser.Following {
+		cursor, err := posts.Find(ctx, bson.M{"userId": follower.UserID, "createdOn": bson.M{"$gte": startOfDay, "$lt": endOfDay}})
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		defer cursor.Close(ctx)
 		for cursor.Next(ctx) {
 			var foundPost Post
-
 			err := cursor.Decode(&foundPost)
 			if err != nil {
-				c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+				if err == mongo.ErrNoDocuments {
+					c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
+					return
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
 			foundPosts = append(foundPosts, foundPost)
 		}
 	}
 	if len(foundPosts) == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "No posts from followed users today"})
+		c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
 		return
 	}
 	c.JSON(http.StatusOK, foundPosts)
@@ -304,7 +310,7 @@ func GetForYouPosts(c *gin.Context) {
 	posts := db.Database.Collection("posts")
 	cursor, err := posts.Find(ctx, bson.M{"createdOn": bson.M{"$gte": startOfDay, "$lt": endOfDay}})
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer cursor.Close(ctx)
@@ -312,13 +318,18 @@ func GetForYouPosts(c *gin.Context) {
 		var foundPost Post
 		err := cursor.Decode(&foundPost)
 		if err != nil {
-			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+			if err == mongo.ErrNoDocuments {
+				c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
+				return
+
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		foundPosts = append(foundPosts, foundPost)
 	}
 	if len(foundPosts) == 0 {
-		c.JSON(http.StatusNoContent, gin.H{"message": "No posts were posted today!"})
+		c.JSON(http.StatusOK, gin.H{"posts": []Post{}})
 		return
 	}
 	c.JSON(http.StatusOK, foundPosts)

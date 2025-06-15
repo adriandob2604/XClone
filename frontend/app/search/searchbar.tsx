@@ -90,6 +90,7 @@ export default function Searchbar() {
         <input
           type="text"
           placeholder="Search"
+          autoComplete="off"
           onFocus={() => setClicked(true)}
           {...searchForm.getFieldProps("input")}
         />
@@ -102,16 +103,20 @@ export default function Searchbar() {
       )}
 
       {clicked && history.length > 0 && (
-        <div>
-          <header>
-            <h4>Recent</h4>
+        <div className="recent-searches-container">
+          <header className="recent-searches-header">
+            <strong>
+              {" "}
+              <h3>Recent</h3>
+            </strong>
+
             <button type="button" onClick={handleClearAll}>
               Clear all
             </button>
           </header>
-          <div>
+          <main className="search-history-container">
             {history.map((search: SearchItem) => (
-              <div key={search.id}>
+              <div key={search.id} className="search-history-item">
                 <>
                   <div>{search.input}</div>
                   <button type="button" onClick={() => handleDelete(search)}>
@@ -120,7 +125,7 @@ export default function Searchbar() {
                 </>
               </div>
             ))}
-          </div>
+          </main>
         </div>
       )}
     </form>

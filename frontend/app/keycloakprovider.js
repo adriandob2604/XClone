@@ -2,14 +2,12 @@ import React, { createContext, useEffect, useState, useCallback } from 'react';
 import keycloak from './lib/keycloak';
 import axios from 'axios';
 import { url } from "@/app/utils";
-import { useRouter } from 'next/navigation';
 
 export const KeycloakContext = createContext();
 
 export const KeycloakProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter()
   useEffect(() => {
   const initKeycloak = async () => {
     try {

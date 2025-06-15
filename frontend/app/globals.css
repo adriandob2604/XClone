@@ -51,7 +51,7 @@
   display: flex;
   position: static;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
   justify-content: center;
   font-size: x-large;
   border-right: solid 0.5px rgb(90, 90, 90);
@@ -60,15 +60,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
   width: 100%;
   height: 100%;
   font-weight: bold;
 }
 .section-container .section-routes .section-element {
+  display: flex;
+  align-items: center;
   border-radius: 16px;
   padding: 1.6rem;
-  width: fit-content;
+  width: 200px;
+}
+.section-container .section-routes .section-element img {
+  display: block;
+  object-fit: cover;
 }
 .section-container .section-routes .section-element:hover {
   background-color: rgb(31, 31, 31);
@@ -78,6 +83,9 @@
   color: white;
   text-decoration: none;
   border: none;
+}
+.section-container .section-post {
+  margin-top: 3.6rem;
 }
 .section-container .section-post a {
   text-decoration: none;
@@ -89,19 +97,40 @@
   font-weight: bold;
   font-size: small;
 }
-.section-container .section-profile {
+.section-container .bottom-profile-section {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.section-container .bottom-profile-section .logout-container {
+  background-color: black;
+  padding: 32px;
+}
+.section-container .bottom-profile-section .logout-container button {
+  background-color: black;
+  border: solid 0.5px rgba(90, 90, 90, 0.576);
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
+  color: white;
+  padding: 32px;
+}
+.section-container .bottom-profile-section .section-profile {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  margin-right: 16px;
   width: fit-content;
 }
-.section-container .section-profile:hover {
+.section-container .bottom-profile-section .section-profile:hover {
   background-color: rgb(31, 31, 31);
   border-radius: 16px;
   transition: background-color 0.4s ease 0.04s;
 }
-.section-container .section-profile .username-section div, .section-container .section-profile .username-section p {
+.section-container .bottom-profile-section .section-profile .username-section div, .section-container .bottom-profile-section .section-profile .username-section p {
   font-weight: bold;
 }
-.section-container .section-profile .username-section p {
+.section-container .bottom-profile-section .section-profile .username-section p {
   color: grey;
   font-size: small;
 }
@@ -203,6 +232,7 @@
 .homepage-post-container {
   border-top: solid 0.5px rgb(90, 90, 90);
   border-bottom: solid 0.5px rgb(90, 90, 90);
+  box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
   padding: 1.6rem;
 }
 .homepage-post-container input {
@@ -276,13 +306,12 @@
 
 .main-container {
   display: flex;
-  width: 100vw;
-  height: 100vh;
   justify-content: center;
 }
 .main-container .aside-container {
   position: static;
   width: 16vw;
+  height: 100vh;
   margin-left: 1.6rem;
 }
 .main-container .main-page {
@@ -329,6 +358,8 @@
   border: solid 0.5px rgb(90, 90, 90);
   border-top: none;
   box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
+  margin-left: 0.4rem;
+  margin-right: 0.4rem;
   padding: 0.4rem;
   border-radius: 0.8rem;
   color: gray;
@@ -343,10 +374,77 @@
   padding-bottom: 0.8rem;
   width: 96%;
   border-radius: 1.6rem;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 .search-bar-container input::placeholder {
   color: white;
   padding-left: 1.6rem;
+}
+.search-bar-container input:focus-visible {
+  border-color: rgb(29, 155, 240);
+}
+.search-bar-container .recent-searches-container {
+  display: flex;
+  flex-direction: column;
+  border: solid 0.5px rgb(90, 90, 90);
+  border-top: none;
+  border-radius: 8px;
+  margin-left: 1.6rem;
+  margin-right: 2.4rem;
+}
+.search-bar-container .recent-searches-container .recent-searches-header {
+  padding-right: 1.6rem;
+  padding-left: 1.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.search-bar-container .recent-searches-container .recent-searches-header button {
+  border: none;
+  background-color: black;
+  width: fit-content;
+  height: fit-content;
+  color: rgb(29, 155, 240);
+}
+.search-bar-container .recent-searches-container .recent-searches-header button:hover {
+  background-color: rgba(29, 156, 240, 0.273);
+  border-radius: 1.6rem;
+}
+.search-bar-container .recent-searches-container .search-history-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 1.6rem;
+  padding-bottom: 1.6rem;
+  padding-right: 2.4rem;
+  padding-left: 2.4rem;
+  box-shadow: 0 4px 8px rgba(85, 85, 85, 0.45);
+}
+.search-bar-container .recent-searches-container .search-history-container .search-history-item {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
+}
+.search-bar-container .recent-searches-container .search-history-container .search-history-item button {
+  border: none;
+  border-radius: 1.6rem;
+  font-size: large;
+  font-weight: bold;
+  background-color: black;
+  color: rgb(29, 155, 240);
+}
+.search-bar-container .recent-searches-container .search-history-container .search-history-item:hover {
+  background-color: rgb(31, 31, 31);
+  transition: background-color 0.4s ease 0.04s;
+  border-radius: 1.6rem;
+}
+.search-bar-container .recent-searches-container .search-history-container .search-history-item:hover button {
+  background-color: rgb(31, 31, 31);
+  transition: background-color 0.4s ease 0.04s;
 }
 
 .notifications-container {
@@ -402,25 +500,108 @@
 .profile-container .profile-navbar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  height: 6vh;
+  gap: 16%;
+}
+.profile-container .profile-navbar button {
+  display: flex;
+  background-color: black;
+  color: white;
+  border: none;
+  font-size: large;
+  align-items: center;
+  padding: 16px;
+}
+.profile-container .profile-navbar button:hover {
+  background-color: rgb(31, 31, 31);
+  transition: background-color 0.4s ease 0.04s;
+  width: fit-content;
+  height: fit-content;
+  border-radius: 16px;
+}
+.profile-container .profile-navbar .name-post-count-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 6vh;
+}
+.profile-container .profile-navbar .name-post-count-container .post-name-container {
+  font-size: x-large;
+  font-weight: bold;
+}
+.profile-container .profile-navbar .name-post-count-container .post-count-container {
+  color: gray;
 }
 .profile-container .profile-navbar a {
   text-decoration: none;
   color: white;
   font-size: large;
 }
-.profile-container .profile-navbar .name-post-count-container {
+.profile-container .background-profile-image {
+  background-color: rgb(59, 59, 59);
+  height: 16vh;
+}
+.profile-container .profile-picture-and-edit-container {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 16px;
+  height: 8vh;
+}
+.profile-container .profile-picture-and-edit-container img {
+  position: relative;
+  background-color: black;
+  border: solid 2px black;
+  border-radius: 64px;
+  bottom: 64px;
+}
+.profile-container .profile-picture-and-edit-container a {
+  text-decoration: none;
+  border: solid 1px rgb(90, 90, 90);
+  border-radius: 16px;
+  color: white;
+  background-color: black;
+  width: fit-content;
+  height: fit-content;
+  padding: 4px;
+  padding-right: 8px;
+  padding-left: 8px;
+  margin-top: 8px;
+  margin-right: 8px;
+  font-weight: bold;
+}
+.profile-container .profile-picture-and-edit-container a:hover {
+  background-color: rgb(31, 31, 31);
+  transition: background-color 0.4s ease 0.04s;
+}
+.profile-container .user-profile-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  margin-left: 16px;
 }
-.profile-container .profile-navbar .name-post-count-container p {
+.profile-container .user-profile-info .user-credentials {
+  gap: 0px;
+}
+.profile-container .user-profile-info .user-credentials p:nth-child(n+1) {
   color: gray;
 }
-.profile-container .profile-navbar .background-profile-image div {
-  background-color: gray;
-  width: 32vw;
-  height: 32vh;
+.profile-container .user-profile-info p:nth-child(2n+1) {
+  color: gray;
+}
+.profile-container .followers-container {
+  display: flex;
+  padding: 16px;
+  justify-content: center;
+  border-bottom: solid 0.5px rgb(90, 90, 90);
+  gap: 64px;
+}
+.profile-container .followers-container a {
+  text-decoration: none;
+  color: gray;
+}
+.profile-container .profile-footer-container .users-to-follow-container {
+  border-bottom: none;
+  border-right: none;
+  border-left: none;
 }
 
 body {

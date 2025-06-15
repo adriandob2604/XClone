@@ -1,27 +1,97 @@
 .search-bar-container {
-            .empty-search-bar {
-                display: flex;
-                align-items: flex-end;
-                border: solid 0.5px rgb(90, 90, 90);
-                border-top: none;
-                box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
-                padding: 0.4rem;
-                border-radius: 0.8rem;
-                color:gray;
-                font-size: small;
+    .empty-search-bar {
+        display: flex;
+        align-items: flex-end;
+        border: solid 0.5px rgb(90, 90, 90);
+        border-top: none;
+        box-shadow: 0 4px 8px rgba(85, 85, 85, 0.3);
+        margin-left: 0.4rem;
+        margin-right: 0.4rem;
+        padding: 0.4rem;
+        border-radius: 0.8rem;
+        color:gray;
+        font-size: small;
+    }
+    input {
+        background-color: black;
+        color: white;
+        border: 0.5 solid gray;
+        padding-top: 0.8rem;
+        padding-left: 0.4rem;
+        padding-bottom: 0.8rem;
+        width: 96%;
+        border-radius: 1.6rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+        &::placeholder {
+            color: white;
+            padding-left: 1.6rem;
+        }
+        &:focus-visible {
+            border-color: rgb(29,155,240);
+        }
+    }
+.recent-searches-container {
+    display: flex;
+    flex-direction: column;
+    border: solid 0.5px rgb(90, 90, 90);
+    border-top: none;
+    border-radius: 8px;
+    margin-left: 1.6rem;
+    margin-right: 2.4rem;
+    .recent-searches-header {
+        padding-right: 1.6rem;
+        padding-left: 1.6rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        button {
+            border: none;
+            background-color: black;
+            width: fit-content;
+            height: fit-content;
+            color: rgb(29,155,240);
+            &:hover {
+            background-color: rgba(29, 156, 240, 0.273);
+            border-radius: 1.6rem;
+
             }
-            input {
-                background-color: black;
-                color: white;
-                border: 0.5 solid gray;
-                padding-top: 0.8rem;
-                padding-left: 0.4rem;
-                padding-bottom: 0.8rem;
-                width: 96%;
+        }
+    }
+    .search-history-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-top: 1.6rem;
+        padding-bottom: 1.6rem;
+        padding-right: 2.4rem;
+        padding-left: 2.4rem;
+        box-shadow: 0 4px 8px rgba(85, 85, 85, 0.45);
+        .search-history-item {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 0.8rem;
+            padding-bottom: 0.8rem;
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+            button {
+                border: none;
                 border-radius: 1.6rem;
-                &::placeholder {
-                    color: white;
-                    padding-left: 1.6rem;
+                font-size: large;
+                font-weight: bold;
+                background-color: black;
+                color: rgb(29,155,240);
+            }
+            &:hover {
+                background-color: rgb(31, 31, 31);
+                transition: background-color 0.4s ease 0.04s;
+                border-radius: 1.6rem;
+                button {
+                    background-color: rgb(31, 31, 31);
+                    transition: background-color 0.4s ease 0.04s;
                 }
             }
         }
+    }
+}
+}

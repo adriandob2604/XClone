@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/adriandob2604/XClone/backend/db"
@@ -16,7 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
@@ -107,41 +105,41 @@ func GetDesiredUsers(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	strLimit := c.DefaultQuery("limit", "10")
-	strOffset := c.DefaultQuery("offset", "0")
-	startsWith := c.DefaultQuery("startsWith", "a")
-	if len(startsWith) > 1 {
-		startsWith = string(startsWith[0])
-	}
-	limit, err := strconv.Atoi(strLimit)
-	if err != nil || limit < 1 {
-		limit = 10
-	}
+	// strLimit := c.DefaultQuery("limit", "10")
+	// strOffset := c.DefaultQuery("offset", "0")
+	// startsWith := c.DefaultQuery("startsWith", "a")
+	// if len(startsWith) > 1 {
+	// 	startsWith = string(startsWith[0])
+	// }
+	// limit, err := strconv.Atoi(strLimit)
+	// if err != nil || limit < 1 {
+	// 	limit = 10
+	// }
 
-	offset, err := strconv.Atoi(strOffset)
-	if err != nil || offset < 0 {
-		offset = 0
-	}
+	// offset, err := strconv.Atoi(strOffset)
+	// if err != nil || offset < 0 {
+	// 	offset = 0
+	// }
 
 	ctx := c.Request.Context()
 	collection := db.Database.Collection("users")
 	filter := bson.M{
 		"_id": bson.M{
-			"$ne": decodedId.(primitive.ObjectID),
+			"$ne": decodedId.(string),
 		},
 	}
-	if startsWith != "" {
-		filter["username"] = bson.M{
-			"$regex":   "^" + startsWith,
-			"$options": "i",
-		}
-	}
+	// if startsWith != "" {
+	// 	filter["username"] = bson.M{
+	// 		"$regex":   "^" + startsWith,
+	// 		"$options": "i",
+	// 	}
+	// }
 	cursor, err := collection.Find(
 		ctx,
 		filter,
-		options.Find().
-			SetLimit(int64(limit)).
-			SetSkip(int64(offset)),
+		// options.Find().
+		// 	SetLimit(int64(limit)).
+		// 	SetSkip(int64(offset)),
 	)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -152,12 +150,20 @@ func GetDesiredUsers(c *gin.Context) {
 		var foundUser UserData
 		err := cursor.Decode(&foundUser)
 		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.JSON(http.StatusOK, gin.H{"users": []UserData{}})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			return
 		}
 		users = append(users, foundUser)
 	}
-	c.JSON(http.StatusOK, users)
+	if len(users) == 0 {
+		c.JSON(http.StatusOK, gin.H{"users": []UserData{}})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 func Me(c *gin.Context) {
 	var foundUser UserData

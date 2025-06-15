@@ -5,7 +5,7 @@ import Image from "next/image";
 import { KeycloakContext } from "../keycloakprovider";
 import { useRouter } from "next/navigation";
 export default function Root(): JSX.Element {
-  const { login, isAuthenticated } = useContext(KeycloakContext);
+  const { login, isAuthenticated, loading } = useContext(KeycloakContext);
   const router = useRouter();
   const handleKeycloakLogin = () => {
     login({
@@ -13,12 +13,10 @@ export default function Root(): JSX.Element {
     });
   };
   useEffect(() => {
-    if (isAuthenticated) {
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
+    if (isAuthenticated && !loading) {
+      router.push("/home");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loading]);
   return (
     <main className="root-container">
       <div className="logo-container">

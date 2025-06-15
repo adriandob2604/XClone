@@ -2,7 +2,10 @@
 import { JSX, useContext, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { CreatePost } from "../profile/[user]/status/[postId]/post";
+import {
+  CreatePost,
+  PostComponent,
+} from "../profile/[user]/status/[postId]/post";
 import { PostData, UserData, url } from "../utils";
 import { KeycloakContext } from "../keycloakprovider";
 import Image from "next/image";
@@ -18,10 +21,14 @@ export function LeftSideBar(): JSX.Element {
   const profileRef = useRef<HTMLAnchorElement>(null);
   const adminRef = useRef<HTMLAnchorElement>(null);
 
-  const handleClick = (ref: React.RefObject<HTMLAnchorElement | null>) => {
+  const logoutRef = useRef<HTMLDivElement>(null);
+
+  const handleClick = (
+    ref: React.RefObject<HTMLAnchorElement | HTMLDivElement | null>
+  ) => {
     ref.current?.click();
   };
-  const { keycloak, logout } = useContext(KeycloakContext);
+  const { keycloak, logout, isAuthenticated } = useContext(KeycloakContext);
   const handleLogout = async () => {
     try {
       await axios.delete(`${url}/users/logout`, {
@@ -40,21 +47,22 @@ export function LeftSideBar(): JSX.Element {
   };
 
   useEffect(() => {
-    if (!keycloak.token) return;
-    try {
-      axios
-        .get(`${url}/users/me`, {
-          headers: {
-            Authorization: `Bearer ${keycloak.token}`,
-          },
-        })
-        .then((response) => setUserData(response.data));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+    if (isAuthenticated && keycloak.token) {
+      try {
+        axios
+          .get(`${url}/users/me`, {
+            headers: {
+              Authorization: `Bearer ${keycloak.token}`,
+            },
+          })
+          .then((response) => setUserData(response.data));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [keycloak.token]);
+  }, [isAuthenticated, keycloak.token]);
   if (isLoading) {
     return <p>Loading...</p>;
   }
@@ -67,7 +75,7 @@ export function LeftSideBar(): JSX.Element {
           onClick={() => handleClick(homeRef)}
           style={{ cursor: "pointer" }}
         >
-          <Image alt="home" src="/home.PNG" width={32} height={32} />
+          <Image alt="home" src="/home.png" width={64} height={64} />
           <Link href="/home" ref={homeRef}>
             Home
           </Link>
@@ -77,7 +85,7 @@ export function LeftSideBar(): JSX.Element {
           style={{ cursor: "pointer" }}
           onClick={() => handleClick(exploreRef)}
         >
-          <Image alt="explore" src="/explore.PNG" width={32} height={32} />
+          <Image alt="explore" src="/explore.png" width={64} height={64} />
           <Link href="/explore" ref={exploreRef}>
             Explore
           </Link>
@@ -89,9 +97,9 @@ export function LeftSideBar(): JSX.Element {
         >
           <Image
             alt="notifications"
-            src="/notifications.PNG"
-            width={32}
-            height={32}
+            src="/notifications.png"
+            width={64}
+            height={64}
           />
           <Link href="/notifications" ref={notificationsRef}>
             Notifications
@@ -102,7 +110,7 @@ export function LeftSideBar(): JSX.Element {
           style={{ cursor: "pointer" }}
           onClick={() => handleClick(profileRef)}
         >
-          <Image alt="profile" src="/profile.PNG" width={32} height={32} />
+          <Image alt="profile" src="/profile.png" width={64} height={64} />
           <Link href={`/profile/${userData?.username}`} ref={profileRef}>
             Profile
           </Link>
@@ -127,41 +135,54 @@ export function LeftSideBar(): JSX.Element {
         </div>
       </div>
       {userData && (
-        <div className="section-profile">
-          {userData.profileImageUrl && (
-            <Image
-              alt="profile-pic"
-              src={`${userData.profileImageUrl}`}
-              width={32}
-              height={32}
-            />
-          )}
-          {!userData.profileImageUrl && (
-            <Image
-              alt="default-profile-pic"
-              src="/pfp.jpg"
-              width={32}
-              height={32}
-            />
+        <div className="bottom-profile-section" tabIndex={0}>
+          {moreClicked && (
+            <div className="logout-container">
+              <button onClick={handleLogout} style={{ cursor: "pointer" }}>
+                Log out @{userData.username}
+              </button>
+            </div>
           )}
 
           <div
-            onClick={() => setProfileClicked(true)}
-            onBlur={() => setProfileClicked(false)}
-            role="button"
-            tabIndex={0}
-            className="username-section"
+            className="section-profile"
+            style={{ cursor: "pointer" }}
+            onBlur={() => setMoreClicked(false)}
+            onFocus={() => {}}
+            onClick={() => setMoreClicked((previous: boolean) => !previous)}
           >
-            <div>
-              {userData?.name} {userData?.surname}
+            {userData.profileImageUrl && (
+              <Image
+                alt="profile-pic"
+                src={`${userData.profileImageUrl}`}
+                width={32}
+                height={32}
+              />
+            )}
+            {!userData.profileImageUrl && (
+              <Image
+                alt="default-profile-pic"
+                src="/default-pic.jpg"
+                width={32}
+                height={32}
+              />
+            )}
+
+            <div
+              onClick={() => setProfileClicked(true)}
+              onBlur={() => setProfileClicked(false)}
+              role="button"
+              tabIndex={0}
+              className="username-section"
+            >
+              <div>
+                {userData?.name} {userData?.surname}
+              </div>
+              <p>@{userData?.username}</p>
             </div>
-            <p>@{userData?.username}</p>
-          </div>
-          <div>
-            <strong>...</strong>
-          </div>
-          <div>
-            <button onClick={handleLogout}>Log out @{userData.username}</button>
+            <div>
+              <strong>...</strong>
+            </div>
           </div>
         </div>
       )}
@@ -169,29 +190,39 @@ export function LeftSideBar(): JSX.Element {
   );
 }
 export function HomeMainPage() {
-  const [activeTab, setActiveTab] = useState<"forYou" | "following">("forYou");
-  const [posts, setPosts] = useState<PostData[]>([])
+  const [activeTab, setActiveTab] = useState<
+    "for_you_posts" | "following_posts"
+  >("for_you_posts");
+  const [posts, setPosts] = useState<PostData[]>([]);
   const { keycloak, isAuthenticated } = useContext(KeycloakContext);
   useEffect(() => {
     if (keycloak.token && isAuthenticated) {
-      axios.get(`${url}/posts/${activeTab}`, {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      }).then((response) => );
+      axios
+        .get(`${url}/posts/${activeTab}`, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        })
+        .then((response) => setPosts(response.data.posts))
+        .catch((err) => console.error(err));
     }
   }, [activeTab, keycloak.token, isAuthenticated]);
   return (
     <>
       <nav className="home-navigation">
         <div className="for-you-following-container">
-          <button onClick={() => setActiveTab("forYou")}>For you</button>
-          <button onClick={() => setActiveTab("following")}>Following</button>
+          <button onClick={() => setActiveTab("for_you_posts")}>For you</button>
+          <button onClick={() => setActiveTab("following_posts")}>
+            Following
+          </button>
         </div>
         <div>
           <CreatePost />
         </div>
       </nav>
+      <main className="homepage-main-posts-container">
+        <PostComponent postData={posts} />
+      </main>
     </>
   );
 }

@@ -7,13 +7,12 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 import { KeycloakContext } from "@/app/keycloakprovider";
 import Image from "next/image";
-export const PostComponent: React.FC<PostComponentProps> = ({
-  users,
-  postData,
-}) => {
-  const { keycloak } = useContext(KeycloakContext);
+export const PostComponent: React.FC<PostComponentProps> = ({ postData }) => {
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [optionsClicked, setOptionsClicked] = useState<boolean[]>([]);
   const [postDeleted, setPostDeleted] = useState<boolean[]>([]);
+  const { keycloak } = useContext(KeycloakContext);
   const deletePost = async (postId: string, index: number) => {
     try {
       const response = await axios.delete(`${url}/posts/${postId}`, {
@@ -30,9 +29,22 @@ export const PostComponent: React.FC<PostComponentProps> = ({
       console.error(err);
     }
   };
+  useEffect(() => {
+    if (keycloak.token) {
+      axios
+        .get(`${url}/users`, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        })
+        .then((response) => setUsers(response.data.users))
+        .catch((err) => console.error(err))
+        .finally(() => setIsLoading(false));
+    }
+  }, [keycloak.token]);
   return (
     <div>
-      {postData?.length !== 0 && users && (
+      {postData?.length !== 0 && (
         <>
           {postData?.map((post: PostData, index: number) => {
             const user = users.find((u: UserData) => u.id === post.userId);
@@ -40,29 +52,27 @@ export const PostComponent: React.FC<PostComponentProps> = ({
               <>
                 {!postDeleted[index] && (
                   <div key={post.id}>
-                    <div>
-                      <span>{`${user?.name} ${user?.surname}`}</span>
-                      <span>@{user?.username}</span>
-                      <span>{post.createdOn.getHours()}h</span>
-                      <button
-                        onClick={() =>
-                          setOptionsClicked(
-                            (previous: boolean[]) => (
-                              (previous[index] = true), [...previous]
-                            )
+                    <span>{`${user?.name} ${user?.surname}`}</span>
+                    <span>@{user?.username}</span>
+                    <span>{post.createdOn.getHours()}h</span>
+                    <button
+                      onClick={() =>
+                        setOptionsClicked(
+                          (previous: boolean[]) => (
+                            (previous[index] = true), [...previous]
                           )
-                        }
-                      >
-                        Options
-                      </button>
-                      {/* {isOwn && optionsClicked[index] && (
+                        )
+                      }
+                    >
+                      Options
+                    </button>
+                    {/* {isOwn && optionsClicked[index] && (
                         <>
                           <button onClick={() => deletePost(post.id, index)}>
                             Delete
                           </button>
                         </>
                       )} */}
-                    </div>
                     <div>
                       <button>Like</button>
                       <button>Comment</button>
@@ -74,7 +84,7 @@ export const PostComponent: React.FC<PostComponentProps> = ({
           })}
         </>
       )}
-      {postData?.length === 0 && <p>No posts were found!</p>}
+      {postData?.length === 0 && <h2>No posts were found!</h2>}
     </div>
   );
 };
@@ -184,7 +194,7 @@ export function CreatePost() {
           ) : (
             <Image
               alt="default-profile-pic"
-              src="/pfp.jpg"
+              src="/default-pic.jpg"
               width={36}
               height={36}
               className="input-profile-pic"
@@ -194,6 +204,7 @@ export function CreatePost() {
           <input
             type="text"
             placeholder="What's happening?!"
+            autoComplete="off"
             {...postForm.getFieldProps("text")}
           />
         </div>
@@ -332,6 +343,6 @@ export function GetSinglePost() {
     <p>Loading...</p>;
   }
   if (postData && userData) {
-    return <PostComponent users={[userData]} postData={[postData]} />;
+    return <PostComponent postData={[postData]} />;
   }
 }
