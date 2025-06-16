@@ -4,6 +4,10 @@ export type DateInfo = {
   days: Record<string, number[]>;
   years: number[];
 };
+export type Follower = {
+  userId:  string, 
+	username: string
+}
 export type UserData = {
   id: string;
   name: string;
@@ -13,8 +17,8 @@ export type UserData = {
   backgroundImageUrl: string;
   description: string;
   createdOn: Date;
-  followers: string[]
-  following: string[]
+  followers: Follower[]
+  following: Follower[]
 };
 
 export type UserComponentProps = {

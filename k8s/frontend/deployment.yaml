@@ -1,10 +1,21 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  labels:
+    app: frontend
 spec:
-  containers:
-    - name: frontend
-      image: adrian/frontend:latest
-      ports:
-        - containerPort: 3000
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: adriandob2604/frontend:latest
+          ports:
+            - containerPort: 3000

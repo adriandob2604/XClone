@@ -1,18 +1,18 @@
-.clone-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: xx-large;
-    width: 16vw;
-}
+
 .section-container {
     display: flex;
-    position: static;
     flex-direction: column;
     height: 100vh;
     justify-content: center;
     font-size: x-large;
     border-right: solid 0.5px rgb(90, 90, 90);
+    .clone-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: xx-large;
+        width: 16vw;
+    }
     .section-routes {
         display: flex;
         flex-direction: column;

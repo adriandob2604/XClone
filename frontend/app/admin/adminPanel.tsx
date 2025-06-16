@@ -8,13 +8,13 @@ import { UserComponent } from "../components/userComponent";
 export default function AdminPanel() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [singleUser, setSingleUser] = useState<UserData | null>(null);
-  const { keycloak } = useContext(KeycloakContext);
+  const { keycloak, isAuthenticated } = useContext(KeycloakContext);
   const [selectedLetter, setSelectedLetter] = useState<string>("");
   const [userInput, setUserInput] = useState<string>("");
   const [userDeleted, setUserDeleted] = useState<boolean[]>([]);
 
   useEffect(() => {
-    if (keycloak.hasRealmRole("admin")) {
+    if (keycloak.hasRealmRole("admin") && keycloak.token && isAuthenticated) {
       axios
         .get(`${url}/users`, {
           headers: {

@@ -1,25 +1,19 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
-import Searchbar from "./searchbar";
 import axios from "axios";
 import { PostData, UserData, url } from "../utils";
 import { FollowUser } from "../components/whoToFollow";
-import {
-  GetPosts,
-  PostComponent,
-} from "../profile/[user]/status/[postId]/post";
+import { PostComponent } from "../profile/[user]/status/[postId]/post";
 import { KeycloakContext } from "../keycloakprovider";
 
 export default function QuerySearches() {
   const searchparams = useSearchParams();
   const params = new URLSearchParams(searchparams.toString());
   const searchQuery = params.get("q");
-  const [inputClicked, setInputClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData[]>([]);
   const [postData, setPostData] = useState<PostData[]>([]);
-  const [noResults, setNoResults] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { keycloak, loading, isAuthenticated } = useContext(KeycloakContext);
 
@@ -40,8 +34,6 @@ export default function QuerySearches() {
               if (response.data.posts) {
                 setPostData(response.data.posts);
               }
-            } else {
-              setNoResults(response.data.message);
             }
           });
       }
@@ -55,35 +47,21 @@ export default function QuerySearches() {
     return <p>Loading...</p>;
   }
   return (
-    <>
-      <nav>
-        <div>
-          <button>Back</button>
-          <Searchbar />
+    <div className="query-searches-container">
+      {userData.length !== 0 && (
+        <div className="query-searches-people">
+          <h2>People</h2>
+          <FollowUser users={userData} />
         </div>
-      </nav>
-      <main>
-        {userData.length === 0 && postData.length === 0 && (
-          <>
-            <h2>{noResults}</h2>
-            <p>Try searching for something else.</p>
-          </>
+      )}
+      <div className="query-searches-posts">
+        {postData.length !== 0 && (
+          <div>
+            <h2>Posts</h2>
+            <PostComponent postData={postData} />
+          </div>
         )}
-        {userData.length !== 0 && (
-          <>
-            <h2>People</h2>
-            <FollowUser users={userData} />
-          </>
-        )}
-        <div>
-          {postData.length !== 0 && (
-            <>
-              <h2>Posts</h2>
-              <PostComponent users={userData} postData={postData} />
-            </>
-          )}
-        </div>
-      </main>
-    </>
+      </div>
+    </div>
   );
 }

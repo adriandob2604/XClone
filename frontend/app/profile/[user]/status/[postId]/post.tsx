@@ -45,16 +45,34 @@ export const PostComponent: React.FC<PostComponentProps> = ({ postData }) => {
   return (
     <div>
       {postData?.length !== 0 && (
-        <>
+        <div key="post-component" className="post-container">
           {postData?.map((post: PostData, index: number) => {
             const user = users.find((u: UserData) => u.id === post.userId);
             return (
-              <>
+              <div key={`${post.id}`}>
                 {!postDeleted[index] && (
-                  <div key={post.id}>
-                    <span>{`${user?.name} ${user?.surname}`}</span>
-                    <span>@{user?.username}</span>
-                    <span>{post.createdOn.getHours()}h</span>
+                  <div key={post.id} className="post-element">
+                    {user?.profileImageUrl === "" && (
+                      <Image
+                        alt="user-profile-pic"
+                        src={"/default-pic.jpg"}
+                        width={32}
+                        height={32}
+                      />
+                    )}
+                    {user?.profileImageUrl !== "" && (
+                      <Image
+                        alt="user-profile-pic"
+                        src={`${user?.profileImageUrl}`}
+                        width={32}
+                        height={32}
+                      />
+                    )}
+                    <div>
+                      <strong>{`${user?.name} ${user?.surname}`}</strong>
+                    </div>
+                    <div>@{user?.username}</div>
+                    <div>{new Date(post.createdOn).getHours()}h</div>
                     <button
                       onClick={() =>
                         setOptionsClicked(
@@ -79,10 +97,10 @@ export const PostComponent: React.FC<PostComponentProps> = ({ postData }) => {
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             );
           })}
-        </>
+        </div>
       )}
       {postData?.length === 0 && <h2>No posts were found!</h2>}
     </div>
@@ -93,7 +111,7 @@ export function CreatePost() {
   const { keycloak, isAuthenticated } = useContext(KeycloakContext);
   const [userData, setUserData] = useState<UserData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const FILE_SIZE = 160 * 1024;
+  const FILE_SIZE = 500 * 1024;
 
   const [previewFile, setPreviewFile] = useState<File | null>(null);
 
@@ -116,14 +134,18 @@ export function CreatePost() {
       file: null,
     },
     validationSchema: Yup.object({
-      text: Yup.string().max(256).required("Required"),
+      text: Yup.string()
+        .max(256)
+        .when("file", (file, schema) => {
+          return file ? schema : schema.required("Required");
+        }),
       file: Yup.mixed().test(
         "fileSize",
         "File too large",
-        (value) => value instanceof File && value && value.size <= FILE_SIZE
+        (value) => !value || (value instanceof File && value.size <= FILE_SIZE)
       ),
     }),
-    onSubmit: async (values) => {
+    onSubmit: async (values, { resetForm }) => {
       const notificationMessage = `${userData?.username} posted!`;
       const formData = new FormData();
       console.log(values.file);
@@ -149,11 +171,10 @@ export function CreatePost() {
               }
             ),
           ]);
-          if (
-            postResponse.status === 201 &&
-            notificationResponse.status === 201
-          ) {
+          if (postResponse.status === 201) {
             console.log("Successfully posted");
+            resetForm();
+            setPreviewFile(null);
           }
         }
       } catch (err) {
@@ -264,7 +285,7 @@ export function CreatePost() {
           <button
             type="submit"
             className="post-button"
-            disabled={!postForm.values.text}
+            disabled={!postForm.values.text && !postForm.values.file}
           >
             Post
           </button>

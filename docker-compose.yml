@@ -39,7 +39,7 @@ services:
     command: >
       start-dev --proxy-headers=xforwarded --hostname-strict=false --hostname-strict-https=false --hostname-admin-url=https://localhost/auth
     volumes:
-      - ./keycloak/data/import:/opt/keycloak/data/import
+      - ./keycloak/custom-theme:/opt/keycloak/themes/custom-theme
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/realms/master"]
       interval: 5s

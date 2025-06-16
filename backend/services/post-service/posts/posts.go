@@ -61,14 +61,16 @@ func CreatePost(c *gin.Context) {
 	var err error
 	postFile, err = c.FormFile("postFile")
 	if err != nil && err != http.ErrMissingFile {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "form_file_parse_error",
+			"message": fmt.Sprintf("Error while parsing form file: %v", err)})
 		return
 	}
 
 	if postFile != nil {
 		fileReader, err := postFile.Open()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "file_open_failed",
+				"message": fmt.Sprintf("Cannot open uploaded file: %v", err)})
 			return
 		}
 		defer fileReader.Close()
@@ -76,7 +78,8 @@ func CreatePost(c *gin.Context) {
 		buf := make([]byte, 512)
 		_, err = fileReader.Read(buf)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot read file"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "file_read_failed",
+				"message": fmt.Sprintf("Cannot read file for content type detection: %v", err)})
 			return
 		}
 		contentType := http.DetectContentType(buf)
@@ -88,7 +91,8 @@ func CreatePost(c *gin.Context) {
 			ContentType: &contentType,
 		})
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "file_upload_failed",
+				"message": fmt.Sprintf("Failed to upload file to Supabase storage: %v", err)})
 			return
 		}
 
@@ -97,7 +101,8 @@ func CreatePost(c *gin.Context) {
 	}
 
 	if strings.TrimSpace(post.Text) == "" && post.FileUrl == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Post must contain text or file"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty_post",
+			"message": "Post must contain either text or a file"})
 		return
 	}
 
@@ -106,7 +111,8 @@ func CreatePost(c *gin.Context) {
 
 	_, err = collection.InsertOne(ctx, post)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db_insert_failed",
+			"message": fmt.Sprintf("Failed to insert post into database: %v", err)})
 		return
 	}
 

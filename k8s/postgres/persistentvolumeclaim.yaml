@@ -3,12 +3,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
 spec:
-  capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: manual
-  hostPath:
-    path: "/mnt/data"
+  resources:
+    requests:
+      storage: 1Gi

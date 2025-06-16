@@ -10,9 +10,8 @@ import { useRouter } from "next/navigation";
 import { HomeMainPage } from "@/app/home/home";
 import Explore from "../explore/explore";
 import Notifications from "../notifications/notifications";
-import axios from "axios";
-import { url } from "@/app/utils";
 import Profile from "../profile/[user]/profile";
+import QuerySearches from "../search/querySearches";
 
 export default function LayoutShell({
   children,
@@ -51,24 +50,29 @@ export default function LayoutShell({
   }, [isAuthenticated, pathname, loading]);
   return (
     <main className="main-container">
-      <section>{!isHomePage && showHome && <LeftSideBar />}</section>
-      <main className="main-page">
-        {publicRoutes &&
-          pathname !== "/explore" &&
-          pathname !== "/notifications" &&
-          !pathname.includes("/profile") && <HomeMainPage />}
-        {pathname === "/explore" && <Explore />}
-        {pathname === "/notifications" && <Notifications />}
-        {pathname.includes("/profile") && <Profile />}
-      </main>
-      <aside className="aside-container">
-        {!isHomePage &&
-          showSearchBar &&
-          pathname !== "/explore" &&
-          showHome && <Searchbar />}
-        {!isHomePage && showWhoToFollow && <WhoToFollow />}
-        {!isHomePage && showTrending && <Trending />}
-      </aside>
+      {pathname !== "/" && pathname !== "/signup" && (
+        <>
+          <section>{!isHomePage && showHome && <LeftSideBar />}</section>
+          <main className="main-page">
+            {publicRoutes &&
+              pathname !== "/explore" &&
+              pathname !== "/notifications" &&
+              !pathname.includes("/profile") && <HomeMainPage />}
+            {pathname === "/explore" && <Explore />}
+            {pathname === "/notifications" && <Notifications />}
+            {pathname.includes("/profile") && <Profile />}
+            {pathname.includes("/search") && <QuerySearches />}
+          </main>
+          <aside className="aside-container">
+            {!isHomePage &&
+              showSearchBar &&
+              pathname !== "/explore" &&
+              showHome && <Searchbar />}
+            {!isHomePage && showWhoToFollow && <WhoToFollow />}
+            {!isHomePage && showTrending && <Trending />}
+          </aside>
+        </>
+      )}
       <div>{children}</div>
     </main>
   );

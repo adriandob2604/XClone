@@ -39,22 +39,20 @@
   border: 1px solid rgb(66, 66, 66);
 }
 
-.clone-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: xx-large;
-  width: 16vw;
-}
-
 .section-container {
   display: flex;
-  position: static;
   flex-direction: column;
   height: 100vh;
   justify-content: center;
   font-size: x-large;
   border-right: solid 0.5px rgb(90, 90, 90);
+}
+.section-container .clone-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: xx-large;
+  width: 16vw;
 }
 .section-container .section-routes {
   display: flex;
@@ -142,34 +140,36 @@
   justify-content: center;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(46, 46, 46, 0.09);
+  background-color: black;
 }
 .create-account-container .items-container {
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   border-radius: 8px;
-  width: 24vw;
-  height: 64vh;
-  padding-left: 4.8rem;
-  gap: 4px;
   background-color: black;
+  border: solid 2px rgb(90, 90, 90);
+  width: 32vw;
+  height: 64vh;
 }
 .create-account-container .items-container .back-button {
-  position: absolute;
-  right: 62%;
-  top: 20%;
-  color: white;
+  align-self: flex-start;
   border: none;
-}
-.create-account-container .items-container h2 {
-  margin-top: 16%;
+  background-color: black;
+  color: white;
+  font-size: x-large;
 }
 .create-account-container .items-container .create-account-information {
-  color: gray;
+  display: flex;
+  flex-direction: column;
   font-size: small;
+  margin-left: 16%;
+  padding: 4px;
+  gap: 16px;
 }
-.create-account-container .items-container strong {
-  margin-top: 8%;
+.create-account-container .items-container .create-account-information div {
+  color: gray;
 }
 .create-account-container .items-container input {
   background-color: black;
@@ -180,6 +180,9 @@
 .create-account-container .items-container input:focus {
   border: solid 2px rgb(29, 155, 240);
   outline: none;
+}
+.create-account-container .items-container strong {
+  margin-top: 4%;
 }
 .create-account-container .items-container input {
   display: flex;
@@ -225,8 +228,56 @@
   width: 16vw;
   padding: 0.6rem;
   border-radius: 8px;
-  margin-top: 4%;
+  margin-top: 16%;
   margin-left: 4%;
+  background-color: white 0.4s ease 0.04s;
+  border: none;
+  cursor: pointer;
+}
+.create-account-container .items-container .next-button:disabled {
+  cursor: not-allowed;
+}
+.create-account-container .next-account-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: solid 0.5px rgb(90, 90, 90);
+  border-radius: 8px;
+  width: 32vw;
+  height: 64vh;
+}
+.create-account-container .next-account-details .account-details {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  margin: 16px;
+  border: 0.5px solid rgb(90, 90, 90);
+  border-radius: 8px;
+  background-color: black;
+  color: gray;
+}
+.create-account-container .next-account-details .account-details:focus {
+  border: solid 2px rgb(29, 155, 240);
+  outline: none;
+  color: white;
+}
+.create-account-container .next-account-details .account-details-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.create-account-container .next-account-details .account-details-buttons button {
+  width: 8vw;
+  padding: 0.6rem;
+  border-radius: 8px;
+  margin-top: 16%;
+  margin-left: 4%;
+  font-weight: bold;
+  cursor: pointer;
+}
+.create-account-container .next-account-details .account-details-buttons button:disabled {
+  cursor: not-allowed;
 }
 
 .homepage-post-container {
@@ -324,14 +375,27 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
+  width: 100%;
+}
+.user-container:hover {
+  background-color: rgb(31, 31, 31);
+  border-radius: 16px;
+  transition: background-color 0.4s ease 0.04s;
 }
 .user-container .account-details {
-  display: flex;
   padding: 0.8rem;
 }
-.user-container .account-details .user-info {
-  display: flex;
-  flex-direction: column;
+.user-container .account-details img {
+  border-radius: 64px;
+}
+.user-container .user-info {
+  font-size: medium;
+  font-weight: bold;
+}
+.user-container .user-info div:nth-child(2n+2) {
+  font-weight: lighter;
+  font-size: small;
+  color: gray;
 }
 .user-container button {
   border: none;
@@ -339,13 +403,15 @@
 .user-container .follow-button {
   background-color: white;
   color: black;
-  border-radius: 8px;
-  padding: 0.4rem;
-  padding-right: 0.6rem;
-  padding-left: 0.6rem;
+  border-radius: 16px;
+  padding: 0.6rem;
+  padding-right: 0.8rem;
+  padding-left: 0.8rem;
+  font-weight: bold;
 }
 
 .users-to-follow-container {
+  position: sticky;
   border: solid 0.5px rgb(90, 90, 90);
   border-radius: 0.4rem;
   margin-top: 0.8rem;
@@ -354,6 +420,7 @@
 
 .search-bar-container .empty-search-bar {
   display: flex;
+  position: sticky;
   align-items: flex-end;
   border: solid 0.5px rgb(90, 90, 90);
   border-top: none;
@@ -602,6 +669,11 @@
   border-bottom: none;
   border-right: none;
   border-left: none;
+}
+
+.post-container {
+  display: flex;
+  flex-direction: column;
 }
 
 body {

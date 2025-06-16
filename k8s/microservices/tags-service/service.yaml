@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tags-service
+spec:
+  selector:
+    app: tags-service
+  ports:
+    - port: 5006
+      targetPort: 5000
+  type: ClusterIP

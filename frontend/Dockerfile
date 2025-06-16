@@ -1,6 +1,13 @@
-FROM node:18-alpine as builder
-WORKDIR /app/frontend
-COPY . .
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+
 RUN npm install
+
+COPY . .
+
 EXPOSE 3000
+
 CMD ["npm", "run", "dev"]

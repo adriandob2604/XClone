@@ -219,6 +219,8 @@ func CreateUser(c *gin.Context) {
 	}
 	newUser.ID = keycloakUserID
 	newUser.Password = password.HashPassword(newUser.Password)
+	newUser.Followers = []Follower{}
+	newUser.Following = []Follower{}
 	_, err = collection.InsertOne(ctx, newUser)
 
 	if err != nil {

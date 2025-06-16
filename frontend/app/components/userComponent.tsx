@@ -3,27 +3,22 @@ import { UserComponentProps } from "../utils";
 import { usePathname } from "next/navigation";
 
 export const UserComponent = ({ user, children }: UserComponentProps) => {
-  const pathname = usePathname();
   return (
     <div key={user.id} className="user-container">
       <div className="account-details">
         {user.profileImageUrl && (
-          <Image src={user.profileImageUrl} alt="User" width={32} height={32} />
+          <Image src={user.profileImageUrl} alt="User" width={48} height={48} />
         )}
         {!user.profileImageUrl && (
-          <Image src={"/pfp.jpg"} alt="User" width={32} height={32} />
-        )}
-        <div className="user-info">
-          <div>
-            {user.name} {user.surname}
-          </div>
-          <div>@{user.username}</div>
-        </div>
-        {pathname !== "/home" && (
-          <div>{new Date(user.createdOn).getDate().toString()}</div>
+          <Image src={"/default-pic.jpg"} alt="User" width={48} height={48} />
         )}
       </div>
-
+      <div className="user-info">
+        <div>
+          {user.name} {user.surname}
+        </div>
+        <div>@{user.username}</div>
+      </div>
       {children}
     </div>
   );

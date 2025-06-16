@@ -97,6 +97,7 @@ export default function Register(): JSX.Element {
           })
           .catch(() => {
             setEmailAvailable(false);
+            alert("This email is already taken. Please choose another one.");
           });
       }
     }, 800);
@@ -121,19 +122,23 @@ export default function Register(): JSX.Element {
                 type="text"
                 placeholder="Name"
                 {...registerForm.getFieldProps("name")}
+                autoComplete="off"
               />
               <input
                 type="text"
                 placeholder="E-mail"
                 {...registerForm.getFieldProps("email")}
+                autoComplete="off"
               />
             </div>
-            <strong>Birth Date</strong>
-            <span className="create-account-information">
-              This information won't be visible for other users. Enter your age,
-              even if this account represents a company, a pet oraz any other
-              person or thing.
-            </span>
+            <div className="create-account-information">
+              <strong>Birth Date</strong>
+              <div>
+                This information won't be visible for other users. Enter your
+                age, even if this account represents a company, a pet oraz any
+                other person or thing.
+              </div>
+            </div>
             <div className="birth-date-details">
               <span></span>
               <div className="birth-date-select">
@@ -203,58 +208,57 @@ export default function Register(): JSX.Element {
           </div>
         </>
       ) : (
-        <>
+        <div className="next-account-details">
+          <h1>Account Details</h1>
           <div>
-            <div className="account-details">
-              <span>Surname</span>
-              <input
-                type="text"
-                placeholder="Enter surname"
-                {...registerForm.getFieldProps("surname")}
-              />
-            </div>
-            <div className="account-details">
-              <span>Phone number</span>
-              <input
-                type="text"
-                placeholder="Enter phone number"
-                {...registerForm.getFieldProps("phoneNumber")}
-              />
-            </div>
-            <div className="account-details">
-              <span>Username</span>
-              <input
-                type="text"
-                placeholder="Enter username"
-                {...registerForm.getFieldProps("username")}
-              />
-            </div>
-            <div className="account-details">
-              <span>Password</span>
-              <input
-                type="password"
-                placeholder="Enter password"
-                {...registerForm.getFieldProps("password")}
-              />
-            </div>
+            <input
+              type="text"
+              className="account-details"
+              autoComplete="off"
+              placeholder="Enter surname"
+              {...registerForm.getFieldProps("surname")}
+            />
+            <input
+              type="text"
+              className="account-details"
+              autoComplete="off"
+              placeholder="Enter phone number"
+              {...registerForm.getFieldProps("phoneNumber")}
+            />
+            <input
+              type="text"
+              className="account-details"
+              autoComplete="off"
+              placeholder="Enter username"
+              {...registerForm.getFieldProps("username")}
+            />
+            <input
+              type="password"
+              className="account-details"
+              autoComplete="off"
+              placeholder="Enter password"
+              {...registerForm.getFieldProps("password")}
+            />
           </div>
-          <button
-            onClick={() => setIsClicked((previous: boolean) => !previous)}
-          >
-            Go back
-          </button>
-          <button
-            type="submit"
-            disabled={
-              !registerForm.values.surname ||
-              !registerForm.values.phoneNumber ||
-              !registerForm.values.username ||
-              !registerForm.values.password
-            }
-          >
-            Sign up
-          </button>
-        </>
+          <div className="account-details-buttons">
+            <button
+              onClick={() => setIsClicked((previous: boolean) => !previous)}
+            >
+              Go back
+            </button>
+            <button
+              type="submit"
+              disabled={
+                !registerForm.values.surname ||
+                !registerForm.values.phoneNumber ||
+                !registerForm.values.username ||
+                !registerForm.values.password
+              }
+            >
+              Sign up
+            </button>
+          </div>
+        </div>
       )}
     </form>
   );

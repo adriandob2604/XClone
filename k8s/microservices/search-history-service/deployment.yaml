@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-history-service
+  labels:
+    app: search-history-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: search-history-service
+  template:
+    metadata:
+      labels:
+        app: search-history-service
+    spec:
+      containers:
+        - name: search-history-service
+          image: adriandob2604/backend-microservices:latest
+          command: ["./search-history-services"]
+          ports:
+            - containerPort: 5000
+          env:
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: USERNAME
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: SUPABASE_URL
+            - name: SUPABASE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: SUPABASE_KEY
+            - name: KEYCLOAK_JWKS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: KEYCLOAK_JWKS_URL

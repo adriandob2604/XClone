@@ -9,6 +9,8 @@
 @use "scss/components/searchbar.scss";
 @use "scss/components/notifications.scss";
 @use "scss/components/profile.scss";
+@use "scss/components/querySearches.scss";
+@use "scss/components/post.scss";
 body {
     font-family: 'Roboto', sans-serif;
     background-color: black;

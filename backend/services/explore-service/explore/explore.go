@@ -39,7 +39,7 @@ func GetExploreSearches(c *gin.Context) {
 		}
 		foundUsers = append(foundUsers, foundUser)
 	}
-	postCursor, err := postsCollection.Find(ctx, bson.M{"text": bson.M{"$regex": "^" + query, "$options": "i"}})
+	postCursor, err := postsCollection.Find(ctx, bson.M{"text": bson.M{"$regex": "^" + query, "$options": "i"}, "userId": bson.M{"$ne": decodedId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})

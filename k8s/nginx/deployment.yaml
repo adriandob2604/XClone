@@ -1,11 +1,43 @@
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
+  labels:
+    app: nginx
 spec:
-  containers:
-    - name: nginx
-      image: adrian/nginx:latest
-      ports:
-        - containerPort: 80
-        - containerPort: 443
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: ssl-certificates
+              mountPath: /etc/nginx/ssl/certs
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: ssl-certificates
+          secret:
+            secretName: cache-tls

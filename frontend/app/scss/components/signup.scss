@@ -5,34 +5,40 @@
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(46, 46, 46, 0.09);
+    background-color: black;
 
     .items-container {
         display: flex;
         flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
         border-radius: 8px;
-        width: 24vw;
-        height: 64vh;
-        padding-left: 4.8rem;
-        gap: 4px;
         background-color: black;
+        border: solid 2px rgb(90, 90, 90);
+        width: 32vw;
+        height: 64vh;
+        // padding: 16px;
+
         .back-button {
-            position: absolute;
-            right: 62%;
-            top: 20%;
-            color: white;
+            align-self: flex-start;
             border: none;
+            background-color: black;
+            color: white;
+            font-size: x-large;
         }
-        h2 {
-            margin-top: 16%;
-        }
+    
         .create-account-information {
-            color: gray;
+            display: flex;
+            flex-direction: column;
             font-size: small;
+            margin-left: 16%;
+            padding: 4px;
+            gap: 16px;
+            div {
+                color: gray;
+            }
         }
-        strong {
-            margin-top: 8%;
-        }
+
         input {
          background-color: black;
          border: solid 1px lightgrey;
@@ -42,6 +48,9 @@
             border: solid 2px rgb(29,155,240);   
             outline: none;
             }
+        }
+        strong {
+            margin-top: 4%;
         }
         input {
             display: flex;
@@ -86,12 +95,64 @@
             }
                 }
         }
+      
         .next-button {
             width: 16vw;
             padding: 0.6rem;
             border-radius: 8px;
-            margin-top: 4%;
+            margin-top: 16%;
             margin-left: 4%;
+            background-color:  white 0.4s ease 0.04s;
+            border: none;
+            cursor: pointer;
+            &:disabled {
+                cursor: not-allowed;
+
+            }
         }
     }
-}
+    .next-account-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: solid 0.5px rgb(90, 90, 90);
+        border-radius: 8px;
+        width: 32vw;
+        height: 64vh;
+        .account-details {
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            margin: 16px;
+            border: 0.5px solid rgb(90, 90, 90);;
+            border-radius: 8px;
+            background-color: black;
+            color: gray;
+            &:focus {
+                border: solid 2px rgb(29,155,240);   
+                outline: none;
+                color: white;
+            }
+            
+            }
+            .account-details-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                button {
+                    width: 8vw;
+                    padding: 0.6rem;
+                    border-radius: 8px;
+                    margin-top: 16%;
+                    margin-left: 4%;
+                    font-weight: bold;
+                    cursor: pointer;
+                    &:disabled {
+                        cursor: not-allowed;
+
+            }
+                }
+            }
+        }
+    }

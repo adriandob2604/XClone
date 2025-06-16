@@ -13,15 +13,12 @@ export function LeftSideBar(): JSX.Element {
   const [moreClicked, setMoreClicked] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [profileClicked, setProfileClicked] = useState<boolean>(false);
 
   const homeRef = useRef<HTMLAnchorElement>(null);
   const exploreRef = useRef<HTMLAnchorElement>(null);
   const notificationsRef = useRef<HTMLAnchorElement>(null);
   const profileRef = useRef<HTMLAnchorElement>(null);
   const adminRef = useRef<HTMLAnchorElement>(null);
-
-  const logoutRef = useRef<HTMLDivElement>(null);
 
   const handleClick = (
     ref: React.RefObject<HTMLAnchorElement | HTMLDivElement | null>
@@ -116,7 +113,7 @@ export function LeftSideBar(): JSX.Element {
           </Link>
         </div>
         {keycloak.hasRealmRole("admin") && (
-          <div>
+          <div className="section-element">
             <div
               className="section-element"
               style={{ cursor: "pointer" }}
@@ -147,8 +144,6 @@ export function LeftSideBar(): JSX.Element {
           <div
             className="section-profile"
             style={{ cursor: "pointer" }}
-            onBlur={() => setMoreClicked(false)}
-            onFocus={() => {}}
             onClick={() => setMoreClicked((previous: boolean) => !previous)}
           >
             {userData.profileImageUrl && (
@@ -168,13 +163,7 @@ export function LeftSideBar(): JSX.Element {
               />
             )}
 
-            <div
-              onClick={() => setProfileClicked(true)}
-              onBlur={() => setProfileClicked(false)}
-              role="button"
-              tabIndex={0}
-              className="username-section"
-            >
+            <div role="button" tabIndex={0} className="username-section">
               <div>
                 {userData?.name} {userData?.surname}
               </div>

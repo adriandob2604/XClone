@@ -1,16 +1,96 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-configuration
-  namespace: ingress-nginx
+  name: nginx-config
 data:
-  use-proxy-protocol: "false"
-  proxy-connect-timeout: "10"
-  proxy-read-timeout: "60"
-  proxy-send-timeout: "60"
-  client-max-body-size: "10m"
-  enable-real-ip: "true"
-  use-forwarded-headers: "true"
-  ssl-redirect: "true"
-  server-tokens: "false"
-  log-format-escape-json: "true"
+  nginx.conf: |
+    events {}
+
+    http {
+        proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=mycache:10m inactive=60m;
+
+        upstream keycloak {
+            server keycloak:8080;
+        }
+        upstream frontend {
+            server frontend-service:80;
+        }
+        upstream explore-service {
+            server explore-service:5000;
+        }
+        upstream interaction-service {
+            server interaction-service:5000;
+        }
+        upstream notifications-service {
+            server notifications-service:5000;
+        }
+        upstream post-service {
+            server post-service:5000;
+        }
+        upstream search-history-service {
+            server search-history-service:5000;
+        }
+        upstream tags-service {
+            server tags-service:5000;
+        }
+        upstream users-service {
+            server users-service:5000;
+        }
+        map $first_path $api_upstream {
+            default "";
+            users             users-service;
+            posts             post-service;
+            explore           explore-service;
+            interactions      interaction-service;
+            notifications     notifications-service;
+            search-history    search-history-service;
+            tags              tags-service;
+        }
+
+        server {
+            listen 80;
+            server_name localhost;
+            return 301 https://$host$request_uri;
+        }
+        server {
+            listen 443 ssl;
+            server_name localhost;
+
+            ssl_certificate /etc/nginx/ssl/certs/tls.crt;
+            ssl_certificate_key /etc/nginx/ssl/certs/tls.key;
+
+            location / {
+                proxy_cache mycache;
+                proxy_pass http://frontend;
+                proxy_cache_bypass $http_upgrade;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            location /auth {
+                proxy_pass http://keycloak;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto https;
+                proxy_set_header X-Forwarded-Host $host;
+            }
+
+            location ~ ^/api/([^/]+)(/.*)?$ {
+                set $first_path $1;
+                set $remaining_path $2;
+                if ($remaining_path = "") {
+                    set $remaining_path "/";
+                }
+                proxy_pass http://$api_upstream$remaining_path;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto https;
+                proxy_set_header X-Forwarded-Host $host;
+            }
+        }
+    }
